@@ -2,6 +2,7 @@
   "name": "3-merchandise",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -19,6 +20,7 @@
     "bcrypt": "^5.1.1",
     "bootstrap": "^5.2.3",
     "core-js": "^3.8.3",
+    "dotenv": "^16.5.0",
     "jquery": "^3.6.4",
     "pg": "^8.15.5",
     "scss": "^0.2.4",

@@ -1,4 +1,4 @@
-const pool = require("./db");
+import pool from './dbConnection.js'
 
 async function checkProducts() {
   try {
