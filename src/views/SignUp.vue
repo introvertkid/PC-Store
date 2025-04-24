@@ -1,10 +1,21 @@
 <template>
   <div class="account">
-    <h2>Profile Page</h2>
-    <div class="login">
-      <h4>Login</h4>
+    <h2>Sign Up Page</h2>
+    <div class="signup">
+      <h4>Create Account</h4>
       <form>
-        <div class="form-floating first">
+        <div class="name">
+          <div class="form-floating first">
+            <input class="form-control" type="text" placeholder=" " required />
+            <label>First Name</label>
+          </div>
+          <div class="form-floating">
+            <input class="form-control" type="text" placeholder=" " required />
+            <label>Last Name</label>
+          </div>
+        </div>
+
+        <div class="form-floating">
           <input class="form-control" type="email" placeholder=" " required />
           <label>Email</label>
         </div>
@@ -17,11 +28,21 @@
           />
           <label>Password</label>
         </div>
-        <span class="forgot-pw">Forgot Password?</span>
-        <input class="submit" type="submit" value="LOGIN" />
-        <p class="create-acc">
-          Don't have an account?
-          <router-link to="/sign-up" class="sign-up">Sign up</router-link>
+        <div class="form-floating">
+          <input
+            class="form-control"
+            type="tel"
+            placeholder=" "
+            pattern="[0-9]{10}"
+            required
+          />
+          <label>Phone Number</label>
+        </div>
+
+        <input class="submit" type="submit" value="SIGN UP" />
+        <p class="login">
+          Already have an account?
+          <router-link to="/profile-page" class="tologin">Login</router-link>
         </p>
       </form>
     </div>
@@ -39,7 +60,7 @@
   h2 {
     font-size: 24px;
   }
-  .login {
+  .signup {
     max-width: 55%;
     margin: 50px auto;
     background-color: white;
@@ -51,11 +72,19 @@
     h4 {
       text-align: center;
       font-size: 22px;
+      margin-bottom: 25px;
+    }
+    .name {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 25px;
+      @media (max-width: 576px) {
+        grid-template-columns: 1fr;
+      }
     }
     .form-floating {
-      &.first {
-        margin-bottom: 25px;
-      }
+      margin-bottom: 25px;
       .form-control {
         height: 44px;
         background-color: rgb(232, 240, 254);
@@ -69,14 +98,6 @@
         padding: 10px;
       }
     }
-    .forgot-pw {
-      cursor: pointer;
-      margin-top: 10px;
-      display: inline-block;
-      &:hover {
-        color: var(--yellow);
-      }
-    }
     .submit {
       display: block;
       margin: auto;
@@ -86,25 +107,22 @@
       border-radius: 6px;
       background-color: rgb(232, 240, 254);
       transition: 0.3s;
+      width: 100%;
       &:hover {
         background-color: var(--yellow);
       }
     }
-    .create-acc {
+    .login {
       margin-top: 15px;
       margin-bottom: 0;
       text-align: center;
-      span {
+      .tologin {
         cursor: pointer;
         &:hover {
           color: var(--yellow);
         }
       }
     }
-  }
-  @media (max-width: 1199px) {
-    flex-direction: column-reverse;
-    padding: 30px 0;
   }
 }
 </style>
