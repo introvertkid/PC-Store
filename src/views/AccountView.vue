@@ -3,9 +3,15 @@
     <h2>Profile Page</h2>
     <div class="login">
       <h4>Login</h4>
-      <form>
+      <form @submit.prevent="handleLogin">
         <div class="form-floating first">
-          <input class="form-control" type="email" placeholder=" " required />
+          <input
+            class="form-control"
+            type="email"
+            placeholder=" "
+            v-model="loginForm.email"
+            required
+          />
           <label>Email</label>
         </div>
         <div class="form-floating">
@@ -13,12 +19,21 @@
             class="form-control"
             type="password"
             placeholder=" "
+            v-model="loginForm.password"
             required
           />
           <label>Password</label>
         </div>
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
         <span class="forgot-pw">Forgot Password?</span>
-        <input class="submit" type="submit" value="LOGIN" />
+        <input
+          class="submit"
+          type="submit"
+          value="LOGIN"
+          :disabled="isLoading"
+        />
         <p class="create-acc">
           Don't have an account?
           <router-link to="/sign-up" class="sign-up">Sign up</router-link>
@@ -27,6 +42,55 @@
     </div>
   </div>
 </template>
+
+<script>
+import axios from "axios";
+
+export default {
+  data() {
+    return {
+      loginForm: {
+        email: "",
+        password: "",
+      },
+      isLoading: false,
+      errorMessage: "",
+    };
+  },
+  methods: {
+    async handleLogin() {
+      try {
+        this.isLoading = true;
+        this.errorMessage = "";
+
+        const response = await axios.post(
+          "/api/customers/login",
+          this.loginForm
+        );
+
+        if (response.data.success) {
+          localStorage.setItem("user", JSON.stringify(response.data.customer));
+          this.$router.push("/");
+        } else {
+          this.errorMessage =
+            response.data.message || "An error occurred while connecting.";
+        }
+      } catch (error) {
+        console.error("Connection error:", error);
+        if (error.response?.status === 401) {
+          this.errorMessage = "Incorrect email or password.";
+        } else {
+          this.errorMessage =
+            error.response?.data?.message ||
+            "An error occurred while connecting.";
+        }
+      } finally {
+        this.isLoading = false;
+      }
+    },
+  },
+};
+</script>
 
 <style lang="scss" scoped>
 .account {
@@ -69,6 +133,11 @@
         padding: 10px;
       }
     }
+    .error-message {
+      color: red;
+      margin-top: 10px;
+      text-align: center;
+    }
     .forgot-pw {
       cursor: pointer;
       margin-top: 10px;
@@ -86,15 +155,20 @@
       border-radius: 6px;
       background-color: rgb(232, 240, 254);
       transition: 0.3s;
+      width: 100%;
       &:hover {
         background-color: var(--yellow);
+      }
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
       }
     }
     .create-acc {
       margin-top: 15px;
       margin-bottom: 0;
       text-align: center;
-      span {
+      .sign-up {
         cursor: pointer;
         &:hover {
           color: var(--yellow);
