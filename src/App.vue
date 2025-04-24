@@ -10,6 +10,9 @@
   <LoadingOverlay v-if="isLoading" />
   <!-- Scroll To Top Button -->
   <ScrollToTop />
+
+  <!-- ✅ Chatbot Interface -->
+  <DifyChatbot />
 </template>
 
 <script>
@@ -18,6 +21,7 @@ import NavbarView from "@/views/NavbarView.vue";
 import FooterView from "@/views/FooterView.vue";
 import ScrollToTop from "@/views/ScrollToTop.vue";
 import LoadingOverlay from "@/views/LoadingOverlay.vue";
+import DifyChatbot from "@/views/DifyChatbot.vue";
 
 export default {
   data() {
@@ -31,6 +35,7 @@ export default {
     ScrollToTop,
     LoadingOverlay,
     SidebarView,
+    DifyChatbot,
   },
   methods: {
     startLoading() {
