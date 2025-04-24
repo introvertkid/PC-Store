@@ -3,20 +3,38 @@
     <h2>Sign Up Page</h2>
     <div class="signup">
       <h4>Create Account</h4>
-      <form>
+      <form @submit.prevent="handleSignUp">
         <div class="name">
           <div class="form-floating first">
-            <input class="form-control" type="text" placeholder=" " required />
+            <input
+              class="form-control"
+              type="text"
+              placeholder=" "
+              v-model="customer.firstName"
+              required
+            />
             <label>First Name</label>
           </div>
           <div class="form-floating">
-            <input class="form-control" type="text" placeholder=" " required />
+            <input
+              class="form-control"
+              type="text"
+              placeholder=" "
+              v-model="customer.lastName"
+              required
+            />
             <label>Last Name</label>
           </div>
         </div>
 
         <div class="form-floating">
-          <input class="form-control" type="email" placeholder=" " required />
+          <input
+            class="form-control"
+            type="email"
+            placeholder=" "
+            v-model="customer.email"
+            required
+          />
           <label>Email</label>
         </div>
         <div class="form-floating">
@@ -24,6 +42,7 @@
             class="form-control"
             type="password"
             placeholder=" "
+            v-model="customer.password"
             required
           />
           <label>Password</label>
@@ -34,12 +53,19 @@
             type="tel"
             placeholder=" "
             pattern="[0-9]{10}"
+            v-model="customer.phoneNumber"
             required
           />
           <label>Phone Number</label>
         </div>
 
-        <input class="submit" type="submit" value="SIGN UP" />
+        <input
+          class="submit"
+          type="submit"
+          value="SIGN UP"
+          :disabled="isSubmitting"
+        />
+        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         <p class="login">
           Already have an account?
           <router-link to="/profile-page" class="tologin">Login</router-link>
@@ -48,6 +74,55 @@
     </div>
   </div>
 </template>
+
+<script>
+import axios from "axios";
+
+export default {
+  data() {
+    return {
+      customer: {
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        phoneNumber: "",
+      },
+      isSubmitting: false,
+      errorMessage: "",
+    };
+  },
+  methods: {
+    async handleSignUp() {
+      try {
+        this.isSubmitting = true;
+        this.errorMessage = "";
+
+        const response = await axios.post(
+          "/api/customers/signup",
+          this.customer
+        );
+
+        if (response.data.success) {
+          // Rediriger vers la page de connexion ou le tableau de bord
+          this.$router.push("/profile-page");
+        } else {
+          this.errorMessage =
+            response.data.message ||
+            "Une erreur est survenue lors de l'inscription.";
+        }
+      } catch (error) {
+        console.error("Erreur d'inscription:", error);
+        this.errorMessage =
+          error.response?.data?.message ||
+          "Une erreur est survenue lors de l'inscription.";
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+  },
+};
+</script>
 
 <style lang="scss" scoped>
 .account {
@@ -111,6 +186,15 @@
       &:hover {
         background-color: var(--yellow);
       }
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+    .error-message {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
     }
     .login {
       margin-top: 15px;
