@@ -1,7 +1,7 @@
 <template>
   <div class="account">
     <h2>Profile Page</h2>
-    <div class="login">
+    <div class="login" v-if="currentStep === 'login'">
       <h4>Login</h4>
       <form @submit.prevent="handleLogin">
         <div class="form-floating first">
@@ -27,7 +27,9 @@
         <div v-if="errorMessage" class="error-message">
           {{ errorMessage }}
         </div>
-        <span class="forgot-pw">Forgot Password?</span>
+        <span class="forgot-pw" @click="showForgotPassword"
+          >Forgot Password?</span
+        >
         <input
           class="submit"
           type="submit"
@@ -40,6 +42,131 @@
         </p>
       </form>
     </div>
+
+    <div class="login" v-if="currentStep === 'forgotPassword'">
+      <h4>Forgot Password</h4>
+      <form @submit.prevent="handleForgotPassword">
+        <div class="form-floating first">
+          <input
+            class="form-control"
+            type="email"
+            placeholder=" "
+            v-model="forgotPasswordForm.email"
+            required
+          />
+          <label>Email</label>
+        </div>
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+        <div class="form-actions">
+          <button class="back-btn" type="button" @click="currentStep = 'login'">
+            Back
+          </button>
+          <input
+            class="submit"
+            type="submit"
+            value="SEND CODE"
+            :disabled="isLoading"
+          />
+        </div>
+      </form>
+    </div>
+
+    <div class="login" v-if="currentStep === 'verifyCode'">
+      <h4>Verification Code</h4>
+      <p class="info-text">Please enter the 6-digit code sent to your email</p>
+      <form @submit.prevent="handleVerifyCode">
+        <div class="verification-code">
+          <input
+            v-for="(digit, index) in 6"
+            :key="index"
+            class="code-input"
+            type="text"
+            maxlength="1"
+            v-model="verificationForm.code[index]"
+            @input="focusNextInput(index)"
+            @keydown.delete="handleBackspace(index, $event)"
+            ref="codeInputs"
+            pattern="[0-9]"
+            inputmode="numeric"
+            required
+          />
+        </div>
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+        <div class="resend-code">
+          <span v-if="resendTimeout > 0"
+            >Resend code in {{ resendTimeout }}s</span
+          >
+          <span v-else class="resend-link" @click="handleForgotPassword"
+            >Resend code</span
+          >
+        </div>
+        <div class="form-actions">
+          <button
+            class="back-btn"
+            type="button"
+            @click="currentStep = 'forgotPassword'"
+          >
+            Back
+          </button>
+          <input
+            class="submit"
+            type="submit"
+            value="VERIFY"
+            :disabled="isLoading || !isCodeComplete"
+          />
+        </div>
+      </form>
+    </div>
+
+    <div class="login" v-if="currentStep === 'resetPassword'">
+      <h4>Reset Password</h4>
+      <form @submit.prevent="handleResetPassword">
+        <div class="form-floating first">
+          <input
+            class="form-control"
+            type="password"
+            placeholder=" "
+            v-model="resetPasswordForm.password"
+            required
+            minlength="8"
+          />
+          <label>New Password</label>
+        </div>
+        <div class="form-floating">
+          <input
+            class="form-control"
+            type="password"
+            placeholder=" "
+            v-model="resetPasswordForm.confirmPassword"
+            required
+            minlength="8"
+          />
+          <label>Confirm Password</label>
+        </div>
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+        <div class="form-actions">
+          <button
+            class="back-btn"
+            type="button"
+            @click="currentStep = 'verifyCode'"
+          >
+            Back
+          </button>
+          <input
+            class="submit"
+            type="submit"
+            value="RESET PASSWORD"
+            :disabled="isLoading"
+          />
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -49,13 +176,31 @@ import axios from "axios";
 export default {
   data() {
     return {
+      currentStep: "login",
       loginForm: {
         email: "",
         password: "",
       },
+      forgotPasswordForm: {
+        email: "",
+      },
+      verificationForm: {
+        code: ["", "", "", "", "", ""],
+      },
+      resetPasswordForm: {
+        password: "",
+        confirmPassword: "",
+      },
       isLoading: false,
       errorMessage: "",
+      resendTimeout: 0,
+      resendTimer: null,
     };
+  },
+  computed: {
+    isCodeComplete() {
+      return this.verificationForm.code.every((digit) => digit !== "");
+    },
   },
   methods: {
     async handleLogin() {
@@ -88,6 +233,133 @@ export default {
         this.isLoading = false;
       }
     },
+    showForgotPassword() {
+      this.currentStep = "forgotPassword";
+      this.errorMessage = "";
+    },
+    async handleForgotPassword() {
+      try {
+        this.isLoading = true;
+        this.errorMessage = "";
+
+        const response = await axios.post("/api/customers/forgot-password", {
+          email: this.forgotPasswordForm.email,
+        });
+
+        if (response.data.success) {
+          this.currentStep = "verifyCode";
+          this.startResendTimeout();
+        } else {
+          this.errorMessage =
+            response.data.message || "Failed to send verification code.";
+        }
+      } catch (error) {
+        console.error("Forgot password error:", error);
+        this.errorMessage =
+          error.response?.data?.message ||
+          "An error occurred while processing your request.";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    startResendTimeout() {
+      this.resendTimeout = 60;
+      clearInterval(this.resendTimer);
+      this.resendTimer = setInterval(() => {
+        if (this.resendTimeout > 0) {
+          this.resendTimeout--;
+        } else {
+          clearInterval(this.resendTimer);
+        }
+      }, 1000);
+    },
+    focusNextInput(index) {
+      this.verificationForm.code[index] = this.verificationForm.code[
+        index
+      ].replace(/[^0-9]/g, "");
+
+      if (this.verificationForm.code[index] && index < 5) {
+        this.$refs.codeInputs[index + 1].focus();
+      }
+    },
+    handleBackspace(index, event) {
+      if (
+        event.key === "Backspace" &&
+        !this.verificationForm.code[index] &&
+        index > 0
+      ) {
+        this.$refs.codeInputs[index - 1].focus();
+      }
+    },
+    async handleVerifyCode() {
+      try {
+        this.isLoading = true;
+        this.errorMessage = "";
+
+        const verificationCode = this.verificationForm.code.join("");
+
+        const response = await axios.post("/api/customers/verify-code", {
+          email: this.forgotPasswordForm.email,
+          code: verificationCode,
+        });
+
+        if (response.data.success) {
+          this.currentStep = "resetPassword";
+        } else {
+          this.errorMessage =
+            response.data.message || "Invalid verification code.";
+        }
+      } catch (error) {
+        console.error("Verification error:", error);
+        this.errorMessage =
+          error.response?.data?.message ||
+          "An error occurred while verifying the code.";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async handleResetPassword() {
+      if (
+        this.resetPasswordForm.password !==
+        this.resetPasswordForm.confirmPassword
+      ) {
+        this.errorMessage = "Passwords do not match.";
+        return;
+      }
+
+      try {
+        this.isLoading = true;
+        this.errorMessage = "";
+
+        const response = await axios.post("/api/customers/reset-password", {
+          email: this.forgotPasswordForm.email,
+          password: this.resetPasswordForm.password,
+        });
+
+        if (response.data.success) {
+          this.errorMessage = ""; 
+
+          this.resetPasswordForm.password = "";
+          this.resetPasswordForm.confirmPassword = "";
+          this.currentStep = "login";
+        } else {
+          this.errorMessage =
+            response.data.message || "Failed to reset password.";
+        }
+      } catch (error) {
+        console.error("Password reset error:", error);
+        this.errorMessage =
+          error.response?.data?.message ||
+          "An error occurred while resetting your password.";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+  },
+  beforeUnmount() {
+    if (this.resendTimer) {
+      clearInterval(this.resendTimer);
+    }
   },
 };
 </script>
@@ -115,6 +387,11 @@ export default {
     h4 {
       text-align: center;
       font-size: 22px;
+    }
+    .info-text {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #666;
     }
     .form-floating {
       &.first {
@@ -173,6 +450,62 @@ export default {
         &:hover {
           color: var(--yellow);
         }
+      }
+    }
+    .verification-code {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 20px 0;
+
+      .code-input {
+        width: 40px;
+        height: 50px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: rgb(232, 240, 254);
+
+        &:focus {
+          outline: none;
+          border-color: var(--yellow);
+        }
+      }
+    }
+    .resend-code {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+
+      .resend-link {
+        color: var(--yellow);
+        cursor: pointer;
+        text-decoration: underline;
+      }
+    }
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+
+      .back-btn {
+        flex: 1;
+        padding: 15px 20px;
+        border: none;
+        border-radius: 6px;
+        background-color: #eee;
+        transition: 0.3s;
+
+        &:hover {
+          background-color: #ddd;
+        }
+      }
+
+      .submit {
+        flex: 2;
+        margin-top: 0;
       }
     }
   }

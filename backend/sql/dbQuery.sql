@@ -66,3 +66,12 @@ CREATE TABLE payments (
   PRIMARY KEY (customerID,checkNumber),
   FOREIGN KEY (customerID) REFERENCES customers (customerID)
 );
+
+CREATE TABLE IF NOT EXISTS verification_codes (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  code VARCHAR(10) NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (email)
+);
