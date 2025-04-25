@@ -337,7 +337,7 @@ export default {
         });
 
         if (response.data.success) {
-          this.errorMessage = ""; 
+          this.errorMessage = "";
 
           this.resetPasswordForm.password = "";
           this.resetPasswordForm.confirmPassword = "";

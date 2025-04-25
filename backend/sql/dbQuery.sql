@@ -1,8 +1,8 @@
-drop table if exists customers;
-drop table if exists products;
-drop table if exists orders;
-drop table if exists employees;
-drop table if exists payments;
+drop table if exists customers cascade;
+drop table if exists products cascade;
+drop table if exists orders cascade;
+drop table if exists employees cascade;
+drop table if exists payments cascade;
 
 CREATE TABLE employees (
   employeeID int,
