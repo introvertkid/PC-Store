@@ -61,6 +61,14 @@ const routes = [
     },
   },
   {
+    name: "sign-up",
+    path: "/sign-up",
+    component: () => import("@/views/SignUp.vue"),
+    meta: {
+      title: "Electbox - Register Account",
+    },
+  },
+  {
     name: "wishlist",
     path: "/wishlist",
     component: () => import("@/components/Wishlist/WishlistView.vue"),

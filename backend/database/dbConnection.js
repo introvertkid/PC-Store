@@ -1,22 +1,19 @@
 import {Pool} from 'pg';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const {
-  POSTGRES_USER,
-  POSTGRES_HOST,
-  POSTGRES_DATABASE,
-  POSTGRES_PASSWORD,
-  POSTGRES_PORT
-} = process.env
+dotenv.config({ path: path.join(__dirname, 'dbConfig.env') });
 
 const pool = new Pool({
-  user: POSTGRES_USER,
-  host: POSTGRES_HOST,
-  database: POSTGRES_DATABASE,
-  password: POSTGRES_PASSWORD,
-  port: POSTGRES_PORT,
+  user: process.env.POSTGRES_USER,
+  host: process.env.POSTGRES_HOST,
+  database: process.env.POSTGRES_DATABASE,
+  password: process.env.POSTGRES_PASSWORD,
+  port: process.env.POSTGRES_PORT,
 });
 
 const query = (text, params) => {

@@ -20,6 +20,8 @@ CREATE TABLE customers (
   customerName varchar(50) NOT NULL,
   customerLastName varchar(50) NOT NULL,
   customerFirstName varchar(50) NOT NULL,
+  userPassword varchar(255) NOT NULL, 
+  email varchar(255) UNIQUE NOT NULL,
   phoneNumber varchar(50) NOT NULL,
   addressLine1 varchar(50) DEFAULT NULL,
   addressLine2 varchar(50) DEFAULT NULL,
