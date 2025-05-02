@@ -1,11 +1,6 @@
-import express from 'express';
 import bcrypt from 'bcrypt';
 import db from '../database/dbConnection.js';
 import nodemailer from 'nodemailer';
-import crypto from 'crypto';
-
-const router = express.Router();
-const verificationCodes = new Map();
 
 const generateCustomerId = async () => {
   const result = await db.query('SELECT MAX(customerID) FROM customers');
@@ -67,7 +62,7 @@ const deleteVerificationCode = async (email) => {
 };
 
 
-router.post('/signup', async (req, res) => {
+export const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, phoneNumber } = req.body;
 
@@ -129,9 +124,9 @@ router.post('/signup', async (req, res) => {
       message: 'Error during\'inscription. Please try again.' 
     });
   }
-});
+};
 
-router.post('/login', async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -194,7 +189,7 @@ router.post('/login', async (req, res) => {
       message: 'Error logging in. Please try again.'
     });
   }
-});
+};
 
 const transporter = nodemailer.createTransport({
   service: 'gmail', 
@@ -208,7 +203,7 @@ const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-router.post('/forgot-password', async (req, res) => {
+export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     console.log(`Password reset request received for email: ${email}`);
@@ -282,9 +277,9 @@ router.post('/forgot-password', async (req, res) => {
       message: 'Failed to process password reset request. Please try again.'
     });
   }
-});
+};
 
-router.post('/verify-code', async (req, res) => {
+export const verifyCode = async (req, res) => {
   try {
     const { email, code } = req.body;
     console.log(`Verification attempt for email: ${email}, code: ${code}`);
@@ -322,9 +317,9 @@ router.post('/verify-code', async (req, res) => {
       message: 'Failed to verify code. Please try again.'
     });
   }
-});
+};
 
-router.post('/reset-password', async (req, res) => {
+export const resetPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
     
@@ -373,6 +368,4 @@ router.post('/reset-password', async (req, res) => {
       message: 'Failed to reset password. Please try again.'
     });
   }
-});
-
-export default router;
+};
