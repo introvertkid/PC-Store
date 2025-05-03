@@ -11,6 +11,11 @@ DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
 DROP TABLE IF EXISTS customers CASCADE;
 DROP TABLE IF EXISTS employees CASCADE;
+drop table if exists vendors cascade;
+drop table if exists product_images cascade;
+drop table if exists product_variants cascade;
+drop table if exists variant_attributes cascade;
+drop table if exists product_category cascade;
 
 CREATE TABLE employees (
   employeeID int PRIMARY KEY,
@@ -22,9 +27,10 @@ CREATE TABLE employees (
 
 CREATE TABLE customers (
   customerID int PRIMARY KEY,
-  lastName VARCHAR(50) NOT NULL,
-  firstName VARCHAR(50) NOT NULL,
-  passwordHash VARCHAR(255) NOT NULL,
+  customerName varchar(100) NOT NULL,
+  customerLastName varchar(50) NOT NULL,
+  customerFirstName varchar(50) NOT NULL,
+  userPassword VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   phoneNumber VARCHAR(15) NOT NULL,
   addressLine VARCHAR(100) DEFAULT NULL,
@@ -63,7 +69,7 @@ CREATE TABLE products (
 
 -- Bảng lưu nhiều ảnh cho mỗi sản phẩm
 CREATE TABLE product_images (
-    imageID INT AUTO_INCREMENT PRIMARY KEY,
+    imageID INT PRIMARY KEY,
     productID INT NOT NULL,
     imageURL VARCHAR(500) NOT NULL,
     isThumbnail BOOLEAN DEFAULT FALSE,
@@ -72,7 +78,7 @@ CREATE TABLE product_images (
 
 -- Bảng lưu biến thể sản phẩm
 CREATE TABLE product_variants (
-    variantID INT AUTO_INCREMENT PRIMARY KEY,
+    variantID INT PRIMARY KEY,
     productID INT NOT NULL,
     variantSKU VARCHAR(255) UNIQUE NOT NULL,
     variantName VARCHAR(255) DEFAULT NULL, -- VD: "8GB RAM / 256GB SSD / i5"
@@ -83,7 +89,7 @@ CREATE TABLE product_variants (
 
 -- (Optional) Bảng lưu thuộc tính cho biến thể (nếu muốn cực flexible)
 CREATE TABLE variant_attributes (
-    attributeID INT AUTO_INCREMENT PRIMARY KEY,
+    attributeID INT PRIMARY KEY,
     variantID INT NOT NULL,
     attributeName VARCHAR(100) NOT NULL, -- VD: "RAM", "CPU", "Color"
     attributeValue VARCHAR(255) NOT NULL, -- VD: "8GB", "i5-1235U", "Silver"

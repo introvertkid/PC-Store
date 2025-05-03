@@ -77,6 +77,7 @@
 
 <script>
 import axios from "axios";
+import logger from "../utils/logger.js";
 
 export default {
   data() {
@@ -106,6 +107,7 @@ export default {
         if (response.data.success) {
           this.$router.push("/profile-page");
         } else {
+          logger.debug("loi o day ne");
           this.errorMessage =
             response.data.message || "An error occurred during registration.";
         }

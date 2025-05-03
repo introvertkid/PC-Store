@@ -61,8 +61,7 @@ const deleteVerificationCode = async (email) => {
   }
 };
 
-
-export const register = async (req, res) => {
+export const signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password, phoneNumber } = req.body;
 
