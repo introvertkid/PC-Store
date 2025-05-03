@@ -3,7 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
 import customerRoutes from './routes/auth.routes.js';
+import productRoutes from './routes/product.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/customers', customerRoutes);
+app.use('/api/products', productRoutes);
 
 app.get('/', (req, res) => {
   res.send('API works correctly');

@@ -63,7 +63,7 @@ CREATE TABLE products (
   productDescription TEXT DEFAULT NULL,
   quantityInStock INT NOT NULL check (quantityInStock > 0),
   price DECIMAL(10,2) NOT NULL check (price > 0),
-  vendorID int not null,
+  vendorID int,
   foreign key (vendorID) references vendors(vendorID) on update cascade
 );
 
@@ -145,3 +145,6 @@ CREATE TABLE verification_codes (
   UNIQUE (customerID),
   FOREIGN KEY (customerID) REFERENCES customers(customerID) ON UPDATE CASCADE
 );
+
+insert into products (productID, productName, quantityInStock, price)
+values (1, 'chim', 1, 1);
