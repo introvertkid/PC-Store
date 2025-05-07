@@ -136,14 +136,13 @@ CREATE TABLE payments (
   FOREIGN KEY (customerID) REFERENCES customers(customerID) ON UPDATE CASCADE
 );
 
-CREATE TABLE verification_codes (
-  id int PRIMARY KEY,
-  customerID INT NOT NULL,
+CREATE TABLE IF NOT EXISTS verification_codes (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
   code VARCHAR(10) NOT NULL,
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (customerID),
-  FOREIGN KEY (customerID) REFERENCES customers(customerID) ON UPDATE CASCADE
+  UNIQUE (email)
 );
 
 insert into products (productID, productName, quantityInStock, price)

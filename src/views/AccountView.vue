@@ -242,7 +242,7 @@ export default {
         this.isLoading = true;
         this.errorMessage = "";
 
-        const response = await axios.post("/api/customers/forgot-password", {
+        const response = await axios.post("/api/customers/forgotPassword", {
           email: this.forgotPasswordForm.email,
         });
 
@@ -298,7 +298,7 @@ export default {
 
         const verificationCode = this.verificationForm.code.join("");
 
-        const response = await axios.post("/api/customers/verify-code", {
+        const response = await axios.post("/api/customers/verifyCode", {
           email: this.forgotPasswordForm.email,
           code: verificationCode,
         });
@@ -331,7 +331,7 @@ export default {
         this.isLoading = true;
         this.errorMessage = "";
 
-        const response = await axios.post("/api/customers/reset-password", {
+        const response = await axios.post("/api/customers/resetPassword", {
           email: this.forgotPasswordForm.email,
           password: this.resetPasswordForm.password,
         });
