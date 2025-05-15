@@ -54,10 +54,18 @@ const routes = [
   },
   {
     name: "profile",
-    path: "/profile-page",
+    path: "/profile",
     component: () => import("@/views/AccountView.vue"),
     meta: {
       title: "Electbox - Login Account",
+    },
+  },
+  {
+    name: "profile-page",
+    path: "/profile-page",
+    component: () => import("@/views/AccountView.vue"),
+    meta: {
+      title: "Electbox - Profile",
     },
   },
   {

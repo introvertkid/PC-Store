@@ -1,171 +1,186 @@
 <template>
   <div class="account">
-    <h2>Profile Page</h2>
-    <div class="login" v-if="currentStep === 'login'">
-      <h4>Login</h4>
-      <form @submit.prevent="handleLogin">
-        <div class="form-floating first">
+    <h2 v-if="isLoggedIn">Welcome, {{ user.name }}</h2>
+    <div v-if="isLoggedIn" class="profile">
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Joined:</strong> {{ user.joinedDate }}</p>
+      <button @click="logout">Logout</button>
+    </div>
+
+    <div v-else>
+      <h2>Profile Page</h2>
+      <div class="login" v-if="currentStep === 'login'">
+        <h4>Login</h4>
+        <form @submit.prevent="handleLogin">
+          <div class="form-floating first">
+            <input
+              class="form-control"
+              type="email"
+              placeholder=" "
+              v-model="loginForm.email"
+              required
+            />
+            <label>Email</label>
+          </div>
+          <div class="form-floating">
+            <input
+              class="form-control"
+              type="password"
+              placeholder=" "
+              v-model="loginForm.password"
+              required
+            />
+            <label>Password</label>
+          </div>
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+          <span class="forgot-pw" @click="showForgotPassword"
+            >Forgot Password?</span
+          >
           <input
-            class="form-control"
-            type="email"
-            placeholder=" "
-            v-model="loginForm.email"
-            required
+            class="submit"
+            type="submit"
+            value="LOGIN"
+            :disabled="isLoading"
           />
-          <label>Email</label>
-        </div>
-        <div class="form-floating">
-          <input
-            class="form-control"
-            type="password"
-            placeholder=" "
-            v-model="loginForm.password"
-            required
-          />
-          <label>Password</label>
-        </div>
-        <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-        <span class="forgot-pw" @click="showForgotPassword"
-          >Forgot Password?</span
-        >
-        <input
-          class="submit"
-          type="submit"
-          value="LOGIN"
-          :disabled="isLoading"
-        />
-        <p class="create-acc">
-          Don't have an account?
-          <router-link to="/sign-up" class="sign-up">Sign up</router-link>
+          <p class="create-acc">
+            Don't have an account?
+            <router-link to="/sign-up" class="sign-up">Sign up</router-link>
+          </p>
+        </form>
+      </div>
+
+      <div class="login" v-if="currentStep === 'forgotPassword'">
+        <h4>Forgot Password</h4>
+        <form @submit.prevent="handleForgotPassword">
+          <div class="form-floating first">
+            <input
+              class="form-control"
+              type="email"
+              placeholder=" "
+              v-model="forgotPasswordForm.email"
+              required
+            />
+            <label>Email</label>
+          </div>
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+          <div class="form-actions">
+            <button
+              class="back-btn"
+              type="button"
+              @click="currentStep = 'login'"
+            >
+              Back
+            </button>
+            <input
+              class="submit"
+              type="submit"
+              value="SEND CODE"
+              :disabled="isLoading"
+            />
+          </div>
+        </form>
+      </div>
+
+      <div class="login" v-if="currentStep === 'verifyCode'">
+        <h4>Verification Code</h4>
+        <p class="info-text">
+          Please enter the 6-digit code sent to your email
         </p>
-      </form>
-    </div>
+        <form @submit.prevent="handleVerifyCode">
+          <div class="verification-code">
+            <input
+              v-for="(digit, index) in 6"
+              :key="index"
+              class="code-input"
+              type="text"
+              maxlength="1"
+              v-model="verificationForm.code[index]"
+              @input="focusNextInput(index)"
+              @keydown.delete="handleBackspace(index, $event)"
+              ref="codeInputs"
+              pattern="[0-9]"
+              inputmode="numeric"
+              required
+            />
+          </div>
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+          <div class="resend-code">
+            <span v-if="resendTimeout > 0"
+              >Resend code in {{ resendTimeout }}s</span
+            >
+            <span v-else class="resend-link" @click="handleForgotPassword"
+              >Resend code</span
+            >
+          </div>
+          <div class="form-actions">
+            <button
+              class="back-btn"
+              type="button"
+              @click="currentStep = 'forgotPassword'"
+            >
+              Back
+            </button>
+            <input
+              class="submit"
+              type="submit"
+              value="VERIFY"
+              :disabled="isLoading || !isCodeComplete"
+            />
+          </div>
+        </form>
+      </div>
 
-    <div class="login" v-if="currentStep === 'forgotPassword'">
-      <h4>Forgot Password</h4>
-      <form @submit.prevent="handleForgotPassword">
-        <div class="form-floating first">
-          <input
-            class="form-control"
-            type="email"
-            placeholder=" "
-            v-model="forgotPasswordForm.email"
-            required
-          />
-          <label>Email</label>
-        </div>
-        <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-        <div class="form-actions">
-          <button class="back-btn" type="button" @click="currentStep = 'login'">
-            Back
-          </button>
-          <input
-            class="submit"
-            type="submit"
-            value="SEND CODE"
-            :disabled="isLoading"
-          />
-        </div>
-      </form>
-    </div>
-
-    <div class="login" v-if="currentStep === 'verifyCode'">
-      <h4>Verification Code</h4>
-      <p class="info-text">Please enter the 6-digit code sent to your email</p>
-      <form @submit.prevent="handleVerifyCode">
-        <div class="verification-code">
-          <input
-            v-for="(digit, index) in 6"
-            :key="index"
-            class="code-input"
-            type="text"
-            maxlength="1"
-            v-model="verificationForm.code[index]"
-            @input="focusNextInput(index)"
-            @keydown.delete="handleBackspace(index, $event)"
-            ref="codeInputs"
-            pattern="[0-9]"
-            inputmode="numeric"
-            required
-          />
-        </div>
-        <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-        <div class="resend-code">
-          <span v-if="resendTimeout > 0"
-            >Resend code in {{ resendTimeout }}s</span
-          >
-          <span v-else class="resend-link" @click="handleForgotPassword"
-            >Resend code</span
-          >
-        </div>
-        <div class="form-actions">
-          <button
-            class="back-btn"
-            type="button"
-            @click="currentStep = 'forgotPassword'"
-          >
-            Back
-          </button>
-          <input
-            class="submit"
-            type="submit"
-            value="VERIFY"
-            :disabled="isLoading || !isCodeComplete"
-          />
-        </div>
-      </form>
-    </div>
-
-    <div class="login" v-if="currentStep === 'resetPassword'">
-      <h4>Reset Password</h4>
-      <form @submit.prevent="handleResetPassword">
-        <div class="form-floating first">
-          <input
-            class="form-control"
-            type="password"
-            placeholder=" "
-            v-model="resetPasswordForm.password"
-            required
-            minlength="8"
-          />
-          <label>New Password</label>
-        </div>
-        <div class="form-floating">
-          <input
-            class="form-control"
-            type="password"
-            placeholder=" "
-            v-model="resetPasswordForm.confirmPassword"
-            required
-            minlength="8"
-          />
-          <label>Confirm Password</label>
-        </div>
-        <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-        <div class="form-actions">
-          <button
-            class="back-btn"
-            type="button"
-            @click="currentStep = 'verifyCode'"
-          >
-            Back
-          </button>
-          <input
-            class="submit"
-            type="submit"
-            value="RESET PASSWORD"
-            :disabled="isLoading"
-          />
-        </div>
-      </form>
+      <div class="login" v-if="currentStep === 'resetPassword'">
+        <h4>Reset Password</h4>
+        <form @submit.prevent="handleResetPassword">
+          <div class="form-floating first">
+            <input
+              class="form-control"
+              type="password"
+              placeholder=" "
+              v-model="resetPasswordForm.password"
+              required
+              minlength="8"
+            />
+            <label>New Password</label>
+          </div>
+          <div class="form-floating">
+            <input
+              class="form-control"
+              type="password"
+              placeholder=" "
+              v-model="resetPasswordForm.confirmPassword"
+              required
+              minlength="8"
+            />
+            <label>Confirm Password</label>
+          </div>
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+          <div class="form-actions">
+            <button
+              class="back-btn"
+              type="button"
+              @click="currentStep = 'verifyCode'"
+            >
+              Back
+            </button>
+            <input
+              class="submit"
+              type="submit"
+              value="RESET PASSWORD"
+              :disabled="isLoading"
+            />
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -201,6 +216,12 @@ export default {
     isCodeComplete() {
       return this.verificationForm.code.every((digit) => digit !== "");
     },
+    isLoggedIn() {
+      return this.$store.state.isLoggedIn;
+    },
+    user() {
+      return this.$store.state.user;
+    },
   },
   methods: {
     async handleLogin() {
@@ -215,7 +236,8 @@ export default {
 
         if (response.data.success) {
           localStorage.setItem("user", JSON.stringify(response.data.customer));
-          this.$router.push("/");
+          this.$store.dispatch("login", response.data.customer); // Cập nhật trạng thái đăng nhập
+          this.$router.push("/profile-page");
         } else {
           this.errorMessage =
             response.data.message || "An error occurred while connecting.";
@@ -354,6 +376,10 @@ export default {
       } finally {
         this.isLoading = false;
       }
+    },
+    logout() {
+      this.$store.dispatch("logout");
+      this.$router.push("/");
     },
   },
   beforeUnmount() {

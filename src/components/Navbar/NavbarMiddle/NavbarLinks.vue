@@ -5,10 +5,10 @@
       <span class="open-search">Search</span>
     </div>
     <div class="user">
-      <router-link to="/profile-page">
-        <i class="fa-regular fa-user"></i
-      ></router-link>
-      <span>Account</span>
+      <router-link :to="isLoggedIn ? '/profile-page' : '/profile'">
+        <i class="fa-regular fa-user"></i>
+      </router-link>
+      <span>{{ isLoggedIn ? "Profile" : "Account" }}</span>
     </div>
     <div class="fav">
       <router-link to="/wishlist">
@@ -181,6 +181,9 @@ export default {
           0
         )
         .toFixed(2)}`;
+    },
+    isLoggedIn() {
+      return this.$store.state.isLoggedIn;
     },
   },
   methods: {

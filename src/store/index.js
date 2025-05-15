@@ -441,6 +441,8 @@ export default createStore({
     wishlistAndCompare: localStorage.getItem("ProductStatus")
       ? JSON.parse(localStorage.getItem("ProductStatus"))
       : [],
+    isLoggedIn: false, // Trạng thái đăng nhập
+    user: null, // Thông tin người dùng
   },
 
   mutations: {
@@ -483,6 +485,19 @@ export default createStore({
       state.featuredProducts = state.allProducts.filter((e) => {
         return e.name == "featured";
       });
+    },
+    setLoginState(state, payload) {
+      state.isLoggedIn = payload.isLoggedIn;
+      state.user = payload.user;
+    },
+  },
+  actions: {
+    login({ commit }, user) {
+      // Giả lập đăng nhập thành công
+      commit("setLoginState", { isLoggedIn: true, user });
+    },
+    logout({ commit }) {
+      commit("setLoginState", { isLoggedIn: false, user: null });
     },
   },
 });
