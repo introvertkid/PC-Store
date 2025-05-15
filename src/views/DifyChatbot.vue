@@ -10,18 +10,16 @@ export default {
     const configScript = document.createElement("script");
     configScript.innerHTML = `
       window.difyChatbotConfig = {
-        token: 'HKKPBoydtTyS0rdj',
-        systemVariables: {
-          // user_id: 'DEFINE_USER_ID_IF_NEEDED',
-        },
+        token: 'V50D1DZ2D0d37aFJ',
+        baseUrl: 'http://localhost'
       };
     `;
     document.head.appendChild(configScript);
 
     // Load chatbot script
     const chatbotScript = document.createElement("script");
-    chatbotScript.src = "https://udify.app/embed.min.js";
-    chatbotScript.id = "HKKPBoydtTyS0rdj";
+    chatbotScript.src = "http://localhost/embed.min.js";
+    chatbotScript.id = "V50D1DZ2D0d37aFJ";
     chatbotScript.defer = true;
     document.head.appendChild(chatbotScript);
 
