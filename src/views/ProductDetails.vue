@@ -130,11 +130,7 @@
                         View My Cart ({{ this.$store.state.cartTotal }})
                       </button>
                     </router-link>
-                    <router-link class="checkout" to="/Profile-Page">
-                      <button data-bs-dismiss="modal" aria-label="Close">
-                        BUY IT NOW
-                      </button>
-                    </router-link>
+                                        <router-link class="checkout" to="/checkout">                      <button data-bs-dismiss="modal" aria-label="Close">                        BUY IT NOW                      </button>                    </router-link>
                   </div>
                   <div class="continue">
                     <router-link to="/catalog">
@@ -147,9 +143,7 @@
               </div>
             </div>
           </div>
-          <router-link class="checkout" to="/Profile-Page">
-            CHECKOUT
-          </router-link>
+                    <router-link class="checkout" to="/checkout">            CHECKOUT          </router-link>
         </div>
         <div class="product-options">
           <div class="fav" @click="toggleFavourite(product)">

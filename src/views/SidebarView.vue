@@ -55,10 +55,12 @@ export default {
 <style lang="scss" scoped>
 .sidebar {
   float: left;
-  width: 20%;
+  width: 260px;
+  margin-right: 20px;
   @media (max-width: 1199px) {
     & {
       width: 100%;
+      margin-right: 0;
     }
   }
   .blog-menu {

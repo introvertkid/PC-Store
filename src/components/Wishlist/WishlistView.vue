@@ -84,7 +84,7 @@
                           View My Cart ({{ this.$store.state.cartTotal }})
                         </button>
                       </router-link>
-                      <router-link to="/profile-page" class="checkout">
+                      <router-link to="/checkout" class="checkout">
                         <button data-bs-dismiss="modal" aria-label="Close">
                           Checkout
                         </button>

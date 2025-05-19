@@ -374,7 +374,7 @@ export default createStore({
         title: "Remote Collaboration, Digital Twins...",
         description: "Turpis at eleifend ps mi elit Aenean porta ac sed...",
         header:
-          "There’s another wireless technology choice for IoT long-range applications",
+          "There's another wireless technology choice for IoT long-range applications",
       },
       {
         id: 3,
@@ -391,10 +391,10 @@ export default createStore({
         name: "Wireless Technologies",
         img: require("@/assets/OurBlog/blog-4.png"),
         date: "27 NOV, 2023",
-        title: "There’s another wireless technology...",
+        title: "There's another wireless technology...",
         description: "long-range applications There's another wireless...",
         header:
-          "There’s another wireless technology choice for IoT long-range applications",
+          "There's another wireless technology choice for IoT long-range applications",
       },
       {
         id: 5,
@@ -441,8 +441,9 @@ export default createStore({
     wishlistAndCompare: localStorage.getItem("ProductStatus")
       ? JSON.parse(localStorage.getItem("ProductStatus"))
       : [],
-    isLoggedIn: false, // Trạng thái đăng nhập
-    user: null, // Thông tin người dùng
+
+    // Thêm state cho danh mục được chọn
+    selectedCategoryId: null,
   },
 
   mutations: {
@@ -486,18 +487,9 @@ export default createStore({
         return e.name == "featured";
       });
     },
-    setLoginState(state, payload) {
-      state.isLoggedIn = payload.isLoggedIn;
-      state.user = payload.user;
-    },
-  },
-  actions: {
-    login({ commit }, user) {
-      // Giả lập đăng nhập thành công
-      commit("setLoginState", { isLoggedIn: true, user });
-    },
-    logout({ commit }) {
-      commit("setLoginState", { isLoggedIn: false, user: null });
+    // Thêm mutation để cập nhật danh mục được chọn
+    setSelectedCategory(state, categoryId) {
+      state.selectedCategoryId = categoryId;
     },
   },
 });

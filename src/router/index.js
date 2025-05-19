@@ -52,6 +52,23 @@ const routes = [
       title: "Electbox - My Cart",
     },
   },
+  // Checkout & Order Confirmation Routes
+  {
+    name: "checkout",
+    path: "/checkout",
+    component: () => import("@/views/CheckoutView.vue"),
+    meta: {
+      title: "Electbox - Checkout",
+    },
+  },
+  {
+    name: "orderConfirmation",
+    path: "/order-confirmation/:orderId",
+    component: () => import("@/views/OrderConfirmation.vue"),
+    meta: {
+      title: "Electbox - Order Confirmation",
+    },
+  },
   {
     name: "profile",
     path: "/profile",

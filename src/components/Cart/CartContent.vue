@@ -1,7 +1,7 @@
 <template>
   <div class="cart-content">
     <h2 class="header">Your Shopping Cart</h2>
-    <div v-if="this.cart.length > 0">
+    <div v-if="cart && cart.length > 0">
       <div class="titles">
         <div class="first">PRODUCT</div>
         <div class="second">PRICE</div>
@@ -102,7 +102,7 @@
             <span class="total-num">${{ totalPrice }}</span>
           </div>
           <div class="taxes">Taxes and shipping calculated at checkout</div>
-          <router-link class="pay" to="/profile-page"> CHECKOUT </router-link>
+          <router-link class="pay" to="/checkout"> CHECKOUT </router-link>
         </div>
       </div>
     </div>

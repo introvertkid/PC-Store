@@ -127,7 +127,7 @@
             </router-link>
           </div>
           <div>
-            <router-link @click="toggleCart()" class="pay" to="/profile-page">
+            <router-link @click="toggleCart()" class="pay" to="/checkout">
               CHECKOUT
             </router-link>
           </div>
