@@ -8,16 +8,10 @@
           <h2>All Products</h2>
           <div class="view-options">
             <span class="view-text">View as:</span>
-            <button
-              :class="{ active: viewMode === 'grid' }"
-              @click="viewMode = 'grid'"
-            >
+            <button :class="{'active': viewMode === 'grid'}" @click="viewMode = 'grid'">
               <i class="fa-solid fa-grip"></i>
             </button>
-            <button
-              :class="{ active: viewMode === 'list' }"
-              @click="viewMode = 'list'"
-            >
+            <button :class="{'active': viewMode === 'list'}" @click="viewMode = 'list'">
               <i class="fa-solid fa-list"></i>
             </button>
           </div>
@@ -67,8 +61,7 @@
                     <span style="font-weight: bold">
                       {{
                         `$${Math.floor(
-                          product.price -
-                            (product.price * product.discount) / 100
+                          product.price - (product.price * product.discount) / 100
                         )}.00 `
                       }}</span
                     >
@@ -115,9 +108,7 @@
                                   data-bs-dismiss="modal"
                                   aria-label="Close"
                                 >
-                                  View My Cart ({{
-                                    this.$store.state.cartTotal
-                                  }})
+                                  View My Cart ({{ this.$store.state.cartTotal }})
                                 </button>
                               </router-link>
                               <router-link class="checkout" to="/checkout">
@@ -183,10 +174,7 @@
           </div>
 
           <div class="filter-sidebar">
-            <ProductFilter
-              @filter-applied="applyFilters"
-              :isLoading="isLoading"
-            />
+            <ProductFilter @filter-applied="applyFilters" :isLoading="isLoading" />
           </div>
         </div>
       </div>
@@ -197,6 +185,7 @@
 <script>
 import { mapState } from "vuex";
 import ProductFilter from "@/components/Sidebar/ProductFilter.vue";
+import axios from 'axios';
 
 export default {
   components: {
@@ -321,20 +310,22 @@ export default {
     // Filter methods
     filterByCategory(category) {
       this.filters.categoryId = category.id;
-      this.applyClientFilters();
+      this.applyFilters();
 
       // Cập nhật URL query parameters
       this.$router.push({
         query: {
           ...this.$route.query,
-          category: category.id,
+          category: category.id
         },
       });
     },
 
     applyFilters(filters) {
-      // Merge the new filters with existing ones
-      this.filters = { ...this.filters, ...filters };
+      if (filters) {
+        // Merge the new filters with existing ones
+        this.filters = { ...this.filters, ...filters };
+      }
 
       // Gọi API để lọc sản phẩm
       this.applyServerFilters();
@@ -358,14 +349,14 @@ export default {
       try {
         this.isLoading = true;
 
-        // Comment lại phần gọi API vì có thể gây lỗi 404
-        // const response = await api.advancedFilterProducts(this.filters);
+        const response = await axios.get('http://localhost:3000/api/products/advanced-filter', {
+          params: this.filters
+        });
 
-        // Luôn sử dụng client filtering
-        this.applyClientFilters();
+        this.catalogProducts = response.data;
       } catch (error) {
-        console.error("Lỗi khi lọc sản phẩm:", error);
-        // Sử dụng client filtering làm fallback
+        console.error('Lỗi khi lọc sản phẩm:', error);
+        // Fallback to client filtering if API fails
         this.applyClientFilters();
       } finally {
         this.isLoading = false;
@@ -378,8 +369,7 @@ export default {
 
       // Filter by category if selected
       if (this.filters.categoryId) {
-        // This is a simplified example. In reality, you would need product-category mapping.
-        // products = products.filter(p => p.categoryId === this.filters.categoryId);
+        products = products.filter(p => p.categoryId === this.filters.categoryId);
       }
 
       // Filter by price range
@@ -417,11 +407,9 @@ export default {
           });
           break;
         case "new":
-          // Assume newer products have higher IDs
           products.sort((a, b) => b.id - a.id);
           break;
         default: // popular
-          // Assume popularity is based on discount (for demo)
           products.sort((a, b) => b.discount - a.discount);
           break;
       }
@@ -429,21 +417,17 @@ export default {
       this.catalogProducts = products;
     },
   },
-  mounted() {
+  async mounted() {
     try {
-      // Không gọi API, sử dụng dữ liệu từ Vuex store trực tiếp
-      this.catalogProducts = [...this.allProducts]; // Sử dụng spread operator để tạo bản sao
+      // Lấy tất cả sản phẩm từ API
+      const response = await axios.get('http://localhost:3000/api/products');
+      this.catalogProducts = response.data;
 
       // Các đoạn code khác giữ nguyên
-      // Check and Set Cart
       this.checkCartLS();
       this.setCartToLS();
-
-      // Check and Set Favourite
       this.checkFavToLS();
       this.setFavToLS();
-
-      // Check and Set Compare
       this.checkCompareToLS();
       this.setCompareToLS();
 
@@ -474,17 +458,14 @@ export default {
       if (query.userNeeds) this.filters.userNeeds = query.userNeeds.split(",");
       if (query.minRating) this.filters.minRating = parseInt(query.minRating);
 
-      // Áp dụng bộ lọc ban đầu
-      if (
-        this.filters.categoryId ||
-        this.filters.minPrice !== 0 ||
-        this.filters.maxPrice !== 5000
-      ) {
-        this.applyClientFilters();
+      // Áp dụng bộ lọc ban đầu nếu có
+      if (this.filters.categoryId || this.filters.minPrice !== 0 || this.filters.maxPrice !== 5000) {
+        this.applyFilters();
       }
     } catch (error) {
-      console.error("Lỗi khi khởi tạo dữ liệu:", error);
-      this.catalogProducts = [...this.allProducts]; // Fallback nếu có lỗi
+      console.error('Lỗi khi khởi tạo dữ liệu:', error);
+      // Fallback to Vuex store data if API fails
+      this.catalogProducts = [...this.allProducts];
     }
   },
 };
@@ -577,6 +558,7 @@ export default {
     }
   }
 }
+
 
 .product {
   .card {
