@@ -147,3 +147,104 @@ CREATE TABLE IF NOT EXISTS verification_codes (
 
 insert into products (productID, productName, quantityInStock, price)
 values (1, 'chim', 1, 1);
+
+
+########## INSERT DATABASE ##########
+
+-- Create product_reviews table
+CREATE TABLE product_reviews (
+    reviewID INT PRIMARY KEY,
+    title VARCHAR(255),
+    content TEXT,
+    thank_count INT,
+    customerID INT,
+    rating INT,
+    created_at TIMESTAMP,
+    customer_name VARCHAR(100),
+    purchased_at TIMESTAMP,
+    FOREIGN KEY (customerID) REFERENCES customers(customerID)
+);
+
+-- Staging table for crawled_data.csv
+CREATE TEMP TABLE staging_products (
+    id INT,
+    sku VARCHAR(255),
+    short_description TEXT,
+    price DECIMAL(10,2),
+    list_price DECIMAL(10,2),
+    avg_rating DECIMAL(3,1),
+    discount DECIMAL(10,2),
+    discount_rate INT,
+    order_count INT,
+    is_visible BOOLEAN,
+    brand VARCHAR(255),
+    name VARCHAR(255),
+    image VARCHAR(500)
+);
+
+-- Staging table for comments_data.csv
+CREATE TEMP TABLE staging_reviews (
+    id INT,
+    title VARCHAR(255),
+    content TEXT,
+    thank_count INT,
+    customer_id INT,
+    rating INT,
+    created_at BIGINT,
+    customer_name VARCHAR(100),
+    purchased_at BIGINT
+);
+
+-- Import CSVs
+*** Trước khi copy thì tạo bạn sao các file csv trong data của project để vào thư mực data của pgadmin trên máy ***
+(tham khảo đường dẫn ở dưới)
+COPY staging_products FROM 'C:/Program Files/PostgreSQL/17/data/SavvyData/crawled_data.csv' WITH (FORMAT csv, HEADER);
+COPY staging_reviews FROM 'C:/Program Files/PostgreSQL/17/data/SavvyData/comments_data.csv' WITH (FORMAT csv, HEADER);
+
+-- Insert unique customers
+WITH unique_customers AS (
+    SELECT DISTINCT customer_id, customer_name
+    FROM staging_reviews
+    WHERE customer_id IS NOT NULL
+)
+INSERT INTO customers (
+    customerID, customerName, customerLastName, customerFirstName, 
+    userPassword, email, phoneNumber, addressLine, city, state, 
+    postalCode, country, salesRepEmployeeID, creditLimit
+)
+SELECT 
+    customer_id, customer_name, '', '', 'default_password', 
+    'customer' || customer_id || '@example.com', '', NULL, NULL, NULL, 
+    NULL, NULL, NULL, 0
+FROM unique_customers
+ON CONFLICT (customerID) DO NOTHING;
+
+-- Insert reviews
+INSERT INTO product_reviews (
+    reviewID, title, content, thank_count, customerID, rating, 
+    created_at, customer_name, purchased_at
+)
+SELECT 
+    COALESCE(id, ROW_NUMBER() OVER ()), title, content, thank_count, 
+    customer_id, rating, TO_TIMESTAMP(created_at), customer_name, 
+    TO_TIMESTAMP(purchased_at)
+FROM staging_reviews
+WHERE customer_id IS NOT NULL;
+
+--Insert products
+ALTER TABLE products ALTER COLUMN productName TYPE VARCHAR(255);
+INSERT INTO products (productID, productName, productSKU, productDescription, quantityInStock, price, vendorID)
+SELECT sp.id, sp.name, sp.sku, sp.short_description, 100, sp.price, NULL
+FROM staging_products sp
+ON CONFLICT (productID) DO NOTHING;
+
+-- Insert product images
+INSERT INTO product_images (
+    imageID, productID, imageURL, isThumbnail
+)
+SELECT 
+    ROW_NUMBER() OVER () + (SELECT COALESCE(MAX(imageID), 0) FROM product_images), 
+    sp.id, sp.image, TRUE
+FROM staging_products sp
+WHERE sp.image IS NOT NULL
+ON CONFLICT (imageID) DO NOTHING;
