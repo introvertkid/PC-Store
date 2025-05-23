@@ -107,7 +107,7 @@ export default {
   width: 100%;
   margin-bottom: 20px;
   max-width: 260px;
-  
+
   button {
     width: 100%;
     font-size: 14px;
@@ -193,7 +193,7 @@ export default {
   }
   @media (max-width: 1199px) {
     max-width: 100%;
-    
+
     button {
       margin-top: 0;
       border-radius: 0;

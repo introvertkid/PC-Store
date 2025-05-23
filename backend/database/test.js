@@ -1,4 +1,4 @@
-import pool from './dbConnection.js'
+import pool from "./dbConnection.js";
 
 async function checkProducts() {
   try {

@@ -3,70 +3,88 @@
     <h3>Payment Method</h3>
     <div class="payment-options">
       <div class="payment-option">
-        <input type="radio" id="creditCard" value="creditCard" v-model="paymentMethod" />
+        <input
+          type="radio"
+          id="creditCard"
+          value="creditCard"
+          v-model="paymentMethod"
+        />
         <label for="creditCard">Credit / Debit Card</label>
         <div class="payment-details" v-if="paymentMethod === 'creditCard'">
           <div class="form-row">
             <div class="form-col full">
               <label for="cardNumber">Card Number *</label>
-              <input 
-                type="text" 
-                id="cardNumber" 
-                v-model="paymentInfo.cardNumber" 
+              <input
+                type="text"
+                id="cardNumber"
+                v-model="paymentInfo.cardNumber"
                 @blur="validateField('cardNumber')"
                 :class="{ 'invalid-input': cardErrors.cardNumber }"
-                required 
-                placeholder="1234 5678 9012 3456" 
+                required
+                placeholder="1234 5678 9012 3456"
               />
-              <div class="error-message" v-if="cardErrors.cardNumber">{{ cardErrors.cardNumber }}</div>
+              <div class="error-message" v-if="cardErrors.cardNumber">
+                {{ cardErrors.cardNumber }}
+              </div>
             </div>
           </div>
           <div class="form-row">
             <div class="form-col">
               <label for="cardName">Name on Card *</label>
-              <input 
-                type="text" 
-                id="cardName" 
-                v-model="paymentInfo.cardName" 
+              <input
+                type="text"
+                id="cardName"
+                v-model="paymentInfo.cardName"
                 @blur="validateField('cardName')"
                 :class="{ 'invalid-input': cardErrors.cardName }"
-                required 
+                required
               />
-              <div class="error-message" v-if="cardErrors.cardName">{{ cardErrors.cardName }}</div>
+              <div class="error-message" v-if="cardErrors.cardName">
+                {{ cardErrors.cardName }}
+              </div>
             </div>
           </div>
           <div class="form-row">
             <div class="form-col">
               <label for="expiry">Expiry Date *</label>
-              <input 
-                type="text" 
-                id="expiry" 
-                v-model="paymentInfo.expiry" 
+              <input
+                type="text"
+                id="expiry"
+                v-model="paymentInfo.expiry"
                 @blur="validateField('expiry')"
                 :class="{ 'invalid-input': cardErrors.expiry }"
-                required 
-                placeholder="MM/YY" 
+                required
+                placeholder="MM/YY"
               />
-              <div class="error-message" v-if="cardErrors.expiry">{{ cardErrors.expiry }}</div>
+              <div class="error-message" v-if="cardErrors.expiry">
+                {{ cardErrors.expiry }}
+              </div>
             </div>
             <div class="form-col">
               <label for="cvv">Security Code (CVV) *</label>
-              <input 
-                type="text" 
-                id="cvv" 
-                v-model="paymentInfo.cvv" 
+              <input
+                type="text"
+                id="cvv"
+                v-model="paymentInfo.cvv"
                 @blur="validateField('cvv')"
                 :class="{ 'invalid-input': cardErrors.cvv }"
-                required 
-                placeholder="123" 
+                required
+                placeholder="123"
               />
-              <div class="error-message" v-if="cardErrors.cvv">{{ cardErrors.cvv }}</div>
+              <div class="error-message" v-if="cardErrors.cvv">
+                {{ cardErrors.cvv }}
+              </div>
             </div>
           </div>
         </div>
       </div>
       <div class="payment-option">
-        <input type="radio" id="paypal" value="paypal" v-model="paymentMethod" />
+        <input
+          type="radio"
+          id="paypal"
+          value="paypal"
+          v-model="paymentMethod"
+        />
         <label for="paypal">PayPal</label>
         <div class="payment-details" v-if="paymentMethod === 'paypal'">
           <p>You will be redirected to PayPal to complete your payment.</p>
@@ -78,52 +96,59 @@
 
 <script>
 export default {
-  name: 'PaymentForm',
-  
+  name: "PaymentForm",
+
   data() {
     return {
-      paymentMethod: 'creditCard',
+      paymentMethod: "creditCard",
       paymentInfo: {
-        cardNumber: '',
-        cardName: '',
-        expiry: '',
-        cvv: ''
+        cardNumber: "",
+        cardName: "",
+        expiry: "",
+        cvv: "",
       },
       cardErrors: {
-        cardNumber: '',
-        cardName: '',
-        expiry: '',
-        cvv: ''
-      }
+        cardNumber: "",
+        cardName: "",
+        expiry: "",
+        cvv: "",
+      },
     };
   },
 
   methods: {
     validateField(field) {
-      if (this.paymentMethod === 'creditCard') {
-        switch(field) {
-          case 'cardNumber':
+      if (this.paymentMethod === "creditCard") {
+        switch (field) {
+          case "cardNumber":
             if (!this.paymentInfo.cardNumber) {
               this.cardErrors.cardNumber = "Card number is required";
-            } else if (!/^\d{16}$/.test(this.paymentInfo.cardNumber.replace(/\D/g, ''))) {
-              this.cardErrors.cardNumber = "Please enter a valid 16-digit card number";
+            } else if (
+              !/^\d{16}$/.test(this.paymentInfo.cardNumber.replace(/\D/g, ""))
+            ) {
+              this.cardErrors.cardNumber =
+                "Please enter a valid 16-digit card number";
             } else {
               this.cardErrors.cardNumber = "";
             }
             break;
-          case 'cardName':
-            this.cardErrors.cardName = this.paymentInfo.cardName ? "" : "Name on card is required";
+          case "cardName":
+            this.cardErrors.cardName = this.paymentInfo.cardName
+              ? ""
+              : "Name on card is required";
             break;
-          case 'expiry':
+          case "expiry":
             if (!this.paymentInfo.expiry) {
               this.cardErrors.expiry = "Expiry date is required";
-            } else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(this.paymentInfo.expiry)) {
+            } else if (
+              !/^(0[1-9]|1[0-2])\/\d{2}$/.test(this.paymentInfo.expiry)
+            ) {
               this.cardErrors.expiry = "Please enter a valid date (MM/YY)";
             } else {
               this.cardErrors.expiry = "";
             }
             break;
-          case 'cvv':
+          case "cvv":
             if (!this.paymentInfo.cvv) {
               this.cardErrors.cvv = "CVV is required";
             } else if (!/^\d{3,4}$/.test(this.paymentInfo.cvv)) {
@@ -134,12 +159,14 @@ export default {
             break;
         }
       }
-      this.$emit('validation-change', this.isValid);
+      this.$emit("validation-change", this.isValid);
     },
 
     validateAllFields() {
-      if (this.paymentMethod === 'creditCard') {
-        ['cardNumber', 'cardName', 'expiry', 'cvv'].forEach(field => this.validateField(field));
+      if (this.paymentMethod === "creditCard") {
+        ["cardNumber", "cardName", "expiry", "cvv"].forEach((field) =>
+          this.validateField(field)
+        );
       }
       return this.isValid;
     },
@@ -147,31 +174,33 @@ export default {
     getPaymentData() {
       return {
         method: this.paymentMethod,
-        info: this.paymentMethod === 'creditCard' ? this.paymentInfo : null
+        info: this.paymentMethod === "creditCard" ? this.paymentInfo : null,
       };
-    }
+    },
   },
 
   computed: {
     isValid() {
-      if (this.paymentMethod === 'creditCard') {
-        return !Object.values(this.cardErrors).some(error => error !== "") &&
-          Object.values(this.paymentInfo).every(value => value !== "");
+      if (this.paymentMethod === "creditCard") {
+        return (
+          !Object.values(this.cardErrors).some((error) => error !== "") &&
+          Object.values(this.paymentInfo).every((value) => value !== "")
+        );
       }
       return true;
-    }
+    },
   },
 
   watch: {
     paymentMethod(newMethod) {
-      if (newMethod === 'creditCard') {
+      if (newMethod === "creditCard") {
         this.$nextTick(() => {
           this.validateAllFields();
         });
       }
-      this.$emit('method-change', newMethod);
-    }
-  }
+      this.$emit("method-change", newMethod);
+    },
+  },
 };
 </script>
 
@@ -181,7 +210,7 @@ export default {
   border-radius: 8px;
   padding: 25px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 
   h3 {
     font-size: 18px;
@@ -192,7 +221,7 @@ export default {
     padding-bottom: 10px;
 
     &:after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: 0;
       left: 0;
@@ -214,13 +243,13 @@ export default {
 
     &:hover {
       border-color: var(--yellow);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
 
     &:has(input:checked) {
       border-color: var(--yellow);
-      background-color: rgba(255,215,0,0.05);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      background-color: rgba(255, 215, 0, 0.05);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
 
     input[type="radio"] {
@@ -295,7 +324,7 @@ export default {
             &:focus {
               outline: none;
               border-color: var(--yellow);
-              box-shadow: 0 0 0 3px rgba(255,215,0,0.15);
+              box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
             }
 
             &.invalid-input {
@@ -315,4 +344,4 @@ export default {
     }
   }
 }
-</style> 
+</style>

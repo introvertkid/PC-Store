@@ -5,69 +5,79 @@
       <div class="form-row">
         <div class="form-col">
           <label for="firstName">First Name *</label>
-          <input 
-            type="text" 
-            id="firstName" 
-            v-model="billingData.firstName" 
+          <input
+            type="text"
+            id="firstName"
+            v-model="billingData.firstName"
             @blur="validateField('firstName')"
             :class="{ 'invalid-input': formErrors.firstName }"
-            required 
+            required
           />
-          <div class="error-message" v-if="formErrors.firstName">{{ formErrors.firstName }}</div>
+          <div class="error-message" v-if="formErrors.firstName">
+            {{ formErrors.firstName }}
+          </div>
         </div>
         <div class="form-col">
           <label for="lastName">Last Name *</label>
-          <input 
-            type="text" 
-            id="lastName" 
-            v-model="billingData.lastName" 
+          <input
+            type="text"
+            id="lastName"
+            v-model="billingData.lastName"
             @blur="validateField('lastName')"
             :class="{ 'invalid-input': formErrors.lastName }"
-            required 
+            required
           />
-          <div class="error-message" v-if="formErrors.lastName">{{ formErrors.lastName }}</div>
+          <div class="error-message" v-if="formErrors.lastName">
+            {{ formErrors.lastName }}
+          </div>
         </div>
       </div>
-      
+
       <div class="form-row">
         <div class="form-col full">
           <label for="address">Address *</label>
-          <input 
-            type="text" 
-            id="address" 
-            v-model="billingData.address" 
+          <input
+            type="text"
+            id="address"
+            v-model="billingData.address"
             @blur="validateField('address')"
             :class="{ 'invalid-input': formErrors.address }"
-            required 
+            required
           />
-          <div class="error-message" v-if="formErrors.address">{{ formErrors.address }}</div>
+          <div class="error-message" v-if="formErrors.address">
+            {{ formErrors.address }}
+          </div>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-col">
           <label for="city">City / Town *</label>
-          <input 
-            type="text" 
-            id="city" 
-            v-model="billingData.city" 
+          <input
+            type="text"
+            id="city"
+            v-model="billingData.city"
             @blur="validateField('city')"
             :class="{ 'invalid-input': formErrors.city }"
-            required 
+            required
           />
-          <div class="error-message" v-if="formErrors.city">{{ formErrors.city }}</div>
+          <div class="error-message" v-if="formErrors.city">
+            {{ formErrors.city }}
+          </div>
         </div>
         <div class="form-col">
           <label for="postalCode">Postal Code *</label>
-          <input 
-            type="text" 
-            id="postalCode" 
-            v-model="billingData.postalCode" 
+          <input
+            type="text"
+            id="postalCode"
+            v-model="billingData.postalCode"
             @blur="validateField('postalCode')"
             :class="{ 'invalid-input': formErrors.postalCode }"
-            required 
+            required
           />
-          <div class="error-message" v-if="formErrors.postalCode">{{ formErrors.postalCode }}</div>
+          <div class="error-message" v-if="formErrors.postalCode">
+            {{ formErrors.postalCode }}
+          </div>
         </div>
       </div>
 
@@ -75,60 +85,69 @@
         <div class="form-col">
           <label for="countrySearch">Country *</label>
           <div class="searchable-select">
-            <input 
-              type="text" 
-              id="countrySearch" 
-              v-model="countrySearch" 
+            <input
+              type="text"
+              id="countrySearch"
+              v-model="countrySearch"
               @focus="showCountryDropdown = true"
               @blur="validateField('country')"
               @input="countrySearchHandler"
               :class="{ 'invalid-input': formErrors.country }"
-              :placeholder="billingData.country || 'Search country...'" 
+              :placeholder="billingData.country || 'Search country...'"
             />
             <div class="dropdown-container" v-show="showCountryDropdown">
               <div class="dropdown-list">
-                <div 
-                  v-for="country in filteredCountries" 
-                  :key="country" 
+                <div
+                  v-for="country in filteredCountries"
+                  :key="country"
                   class="dropdown-item"
                   @click="selectCountry(country)"
                 >
                   {{ country }}
                 </div>
-                <div v-if="filteredCountries.length === 0" class="dropdown-item no-results">
+                <div
+                  v-if="filteredCountries.length === 0"
+                  class="dropdown-item no-results"
+                >
                   No countries found
                 </div>
               </div>
             </div>
-            <div class="error-message" v-if="formErrors.country">{{ formErrors.country }}</div>
+            <div class="error-message" v-if="formErrors.country">
+              {{ formErrors.country }}
+            </div>
           </div>
         </div>
         <div class="form-col">
           <label for="phone">Phone *</label>
-          <input 
-            type="tel" 
-            id="phone" 
-            v-model="billingData.phone" 
+          <input
+            type="tel"
+            id="phone"
+            v-model="billingData.phone"
             @blur="validateField('phone')"
             :class="{ 'invalid-input': formErrors.phone }"
-            required 
+            required
           />
-          <div class="error-message" v-if="formErrors.phone">{{ formErrors.phone }}</div>
+          <div class="error-message" v-if="formErrors.phone">
+            {{ formErrors.phone }}
+          </div>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-col full">
           <label for="email">Email Address *</label>
-          <input 
-            type="email" 
-            id="email" 
-            v-model="billingData.email" 
-            @blur="validateField('email')" 
+          <input
+            type="email"
+            id="email"
+            v-model="billingData.email"
+            @blur="validateField('email')"
             :class="{ 'invalid-input': formErrors.email }"
-            required 
+            required
           />
-          <div class="error-message" v-if="formErrors.email">{{ formErrors.email }}</div>
+          <div class="error-message" v-if="formErrors.email">
+            {{ formErrors.email }}
+          </div>
         </div>
       </div>
     </div>
@@ -136,11 +155,11 @@
 </template>
 
 <script>
-import { countries } from '@/constants/countries';
+import { countries } from "@/constants/countries";
 
 export default {
-  name: 'BillingForm',
-  
+  name: "BillingForm",
+
   data() {
     return {
       billingData: {
@@ -151,7 +170,7 @@ export default {
         postalCode: "",
         country: "",
         phone: "",
-        email: ""
+        email: "",
       },
       formErrors: {
         firstName: "",
@@ -161,60 +180,78 @@ export default {
         postalCode: "",
         country: "",
         phone: "",
-        email: ""
+        email: "",
       },
       countrySearch: "",
       showCountryDropdown: false,
       filteredCountries: [...countries],
-      countries
+      countries,
     };
   },
 
   methods: {
     validateField(field) {
-      switch(field) {
-        case 'firstName':
-          this.formErrors.firstName = this.billingData.firstName ? "" : "First name is required";
+      switch (field) {
+        case "firstName":
+          this.formErrors.firstName = this.billingData.firstName
+            ? ""
+            : "First name is required";
           break;
-        case 'lastName':
-          this.formErrors.lastName = this.billingData.lastName ? "" : "Last name is required";
+        case "lastName":
+          this.formErrors.lastName = this.billingData.lastName
+            ? ""
+            : "Last name is required";
           break;
-        case 'address':
-          this.formErrors.address = this.billingData.address ? "" : "Address is required";
+        case "address":
+          this.formErrors.address = this.billingData.address
+            ? ""
+            : "Address is required";
           break;
-        case 'city':
-          this.formErrors.city = this.billingData.city ? "" : "City is required";
+        case "city":
+          this.formErrors.city = this.billingData.city
+            ? ""
+            : "City is required";
           break;
-        case 'postalCode':
-          this.formErrors.postalCode = this.billingData.postalCode ? "" : "Postal code is required";
+        case "postalCode":
+          this.formErrors.postalCode = this.billingData.postalCode
+            ? ""
+            : "Postal code is required";
           break;
-        case 'country':
-          this.formErrors.country = this.billingData.country ? "" : "Country is required";
+        case "country":
+          this.formErrors.country = this.billingData.country
+            ? ""
+            : "Country is required";
           break;
-        case 'phone':
+        case "phone":
           if (!this.billingData.phone) {
             this.formErrors.phone = "Phone number is required";
-          } else if (!/^\d{10,15}$/.test(this.billingData.phone.replace(/\D/g, ''))) {
+          } else if (
+            !/^\d{10,15}$/.test(this.billingData.phone.replace(/\D/g, ""))
+          ) {
             this.formErrors.phone = "Please enter a valid phone number";
           } else {
             this.formErrors.phone = "";
           }
           break;
-        case 'email':
+        case "email":
           if (!this.billingData.email) {
             this.formErrors.email = "Email is required";
-          } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(this.billingData.email)) {
+          } else if (
+            !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+              this.billingData.email
+            )
+          ) {
             this.formErrors.email = "Please enter a valid email address";
           } else {
             this.formErrors.email = "";
           }
           break;
       }
-      this.$emit('validation-change', this.isValid);
+      this.$emit("validation-change", this.isValid);
     },
 
     countrySearchHandler() {
-      this.filteredCountries = this.countries.filter(country => 
+      this.filteredCountries = this.countries.filter((country) =>
         country.toLowerCase().includes(this.countrySearch.toLowerCase())
       );
     },
@@ -223,33 +260,33 @@ export default {
       this.billingData.country = country;
       this.countrySearch = "";
       this.showCountryDropdown = false;
-      this.validateField('country');
+      this.validateField("country");
     },
 
     validateAllFields() {
-      Object.keys(this.billingData).forEach(field => this.validateField(field));
+      Object.keys(this.billingData).forEach((field) =>
+        this.validateField(field)
+      );
       return this.isValid;
     },
 
     getBillingData() {
       return this.billingData;
-    }
+    },
   },
 
   computed: {
     isValid() {
-      return !Object.values(this.formErrors).some(error => error !== "") &&
-        Object.values(this.billingData).every(value => value !== "");
-    }
+      return (
+        !Object.values(this.formErrors).some((error) => error !== "") &&
+        Object.values(this.billingData).every((value) => value !== "")
+      );
+    },
   },
 
   mounted() {
-    document.addEventListener('click', this.closeDropdown);
+    document.addEventListener("click", this.closeDropdown);
   },
-
-  beforeDestroy() {
-    document.removeEventListener('click', this.closeDropdown);
-  }
 };
 </script>
 
@@ -259,7 +296,7 @@ export default {
   border-radius: 8px;
   padding: 25px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 
   h3 {
     font-size: 18px;
@@ -270,7 +307,7 @@ export default {
     padding-bottom: 10px;
 
     &:after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: 0;
       left: 0;
@@ -319,7 +356,7 @@ export default {
         &:focus {
           outline: none;
           border-color: var(--yellow);
-          box-shadow: 0 0 0 3px rgba(255,215,0,0.15);
+          box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
         }
 
         &.invalid-input {
@@ -352,7 +389,7 @@ export default {
     border: 1px solid #ddd;
     border-radius: 0 0 6px 6px;
     z-index: 100;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
     .dropdown-list {
       .dropdown-item {
@@ -373,4 +410,4 @@ export default {
     }
   }
 }
-</style> 
+</style>

@@ -8,15 +8,21 @@
           <h2>All Products</h2>
           <div class="view-options">
             <span class="view-text">View as:</span>
-            <button :class="{'active': viewMode === 'grid'}" @click="viewMode = 'grid'">
+            <button
+              :class="{ active: viewMode === 'grid' }"
+              @click="viewMode = 'grid'"
+            >
               <i class="fa-solid fa-grip"></i>
             </button>
-            <button :class="{'active': viewMode === 'list'}" @click="viewMode = 'list'">
+            <button
+              :class="{ active: viewMode === 'list' }"
+              @click="viewMode = 'list'"
+            >
               <i class="fa-solid fa-list"></i>
             </button>
           </div>
         </div>
-        
+
         <div class="products-section">
           <div class="products-container" :class="viewMode">
             <div
@@ -61,7 +67,8 @@
                     <span style="font-weight: bold">
                       {{
                         `$${Math.floor(
-                          product.price - (product.price * product.discount) / 100
+                          product.price -
+                            (product.price * product.discount) / 100
                         )}.00 `
                       }}</span
                     >
@@ -108,7 +115,9 @@
                                   data-bs-dismiss="modal"
                                   aria-label="Close"
                                 >
-                                  View My Cart ({{ this.$store.state.cartTotal }})
+                                  View My Cart ({{
+                                    this.$store.state.cartTotal
+                                  }})
                                 </button>
                               </router-link>
                               <router-link class="checkout" to="/checkout">
@@ -172,9 +181,12 @@
               </div>
             </div>
           </div>
-          
+
           <div class="filter-sidebar">
-            <ProductFilter @filter-applied="applyFilters" :isLoading="isLoading" />
+            <ProductFilter
+              @filter-applied="applyFilters"
+              :isLoading="isLoading"
+            />
           </div>
         </div>
       </div>
@@ -310,12 +322,12 @@ export default {
     filterByCategory(category) {
       this.filters.categoryId = category.id;
       this.applyClientFilters();
-      
+
       // Cập nhật URL query parameters
       this.$router.push({
         query: {
           ...this.$route.query,
-          category: category.id
+          category: category.id,
         },
       });
     },
@@ -323,10 +335,10 @@ export default {
     applyFilters(filters) {
       // Merge the new filters with existing ones
       this.filters = { ...this.filters, ...filters };
-      
+
       // Gọi API để lọc sản phẩm
       this.applyServerFilters();
-      
+
       // Cập nhật URL query parameters
       this.$router.push({
         query: {
@@ -340,26 +352,26 @@ export default {
         },
       });
     },
-    
+
     // Phương thức gọi API lọc sản phẩm
     async applyServerFilters() {
       try {
         this.isLoading = true;
-        
+
         // Comment lại phần gọi API vì có thể gây lỗi 404
         // const response = await api.advancedFilterProducts(this.filters);
-        
+
         // Luôn sử dụng client filtering
         this.applyClientFilters();
       } catch (error) {
-        console.error('Lỗi khi lọc sản phẩm:', error);
+        console.error("Lỗi khi lọc sản phẩm:", error);
         // Sử dụng client filtering làm fallback
         this.applyClientFilters();
       } finally {
         this.isLoading = false;
       }
     },
-    
+
     // Phương thức lọc sản phẩm phía client (dùng làm fallback)
     applyClientFilters() {
       let products = [...this.allProducts];
@@ -421,7 +433,7 @@ export default {
     try {
       // Không gọi API, sử dụng dữ liệu từ Vuex store trực tiếp
       this.catalogProducts = [...this.allProducts]; // Sử dụng spread operator để tạo bản sao
-      
+
       // Các đoạn code khác giữ nguyên
       // Check and Set Cart
       this.checkCartLS();
@@ -461,13 +473,17 @@ export default {
       if (query.sortBy) this.filters.sortBy = query.sortBy;
       if (query.userNeeds) this.filters.userNeeds = query.userNeeds.split(",");
       if (query.minRating) this.filters.minRating = parseInt(query.minRating);
-      
+
       // Áp dụng bộ lọc ban đầu
-      if (this.filters.categoryId || this.filters.minPrice !== 0 || this.filters.maxPrice !== 5000) {
+      if (
+        this.filters.categoryId ||
+        this.filters.minPrice !== 0 ||
+        this.filters.maxPrice !== 5000
+      ) {
         this.applyClientFilters();
       }
     } catch (error) {
-      console.error('Lỗi khi khởi tạo dữ liệu:', error);
+      console.error("Lỗi khi khởi tạo dữ liệu:", error);
       this.catalogProducts = [...this.allProducts]; // Fallback nếu có lỗi
     }
   },
@@ -477,34 +493,34 @@ export default {
 <style lang="scss" scoped>
 .catalog-container {
   width: 100%;
-  
+
   .content-column {
     width: 100%;
     padding-left: 20px; /* Increase padding from 10px to 20px to match contact page spacing */
-    
+
     .all-products-section {
       width: 100%;
-      
+
       .products-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        
+
         h2 {
           font-size: 24px;
           margin-bottom: 0;
         }
-        
+
         .view-options {
           display: flex;
           align-items: center;
-          
+
           .view-text {
             margin-right: 10px;
             color: #666;
           }
-          
+
           button {
             background: none;
             border: 1px solid #ddd;
@@ -513,7 +529,7 @@ export default {
             border-radius: 4px;
             margin-left: 5px;
             cursor: pointer;
-            
+
             &.active {
               background-color: var(--yellow);
               border-color: var(--yellow);
@@ -521,38 +537,38 @@ export default {
           }
         }
       }
-      
+
       .products-section {
         display: flex;
-        
+
         .products-container {
           flex: 1;
-          
+
           &.grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            
+
             @media (max-width: 1200px) {
               grid-template-columns: repeat(2, 1fr);
             }
-            
+
             @media (max-width: 767px) {
               grid-template-columns: repeat(1, 1fr);
             }
           }
-          
+
           &.list {
             display: flex;
             flex-direction: column;
             gap: 20px;
           }
         }
-        
+
         .filter-sidebar {
           width: 280px;
           margin-left: 20px;
-          
+
           @media (max-width: 991px) {
             display: none;
           }
@@ -561,7 +577,6 @@ export default {
     }
   }
 }
-
 
 .product {
   .card {

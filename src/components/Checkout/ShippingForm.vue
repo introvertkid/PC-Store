@@ -3,7 +3,12 @@
     <h3>Shipping Method</h3>
     <div class="shipping-options">
       <div class="shipping-option">
-        <input type="radio" id="standard" value="standard" v-model="selectedMethod" />
+        <input
+          type="radio"
+          id="standard"
+          value="standard"
+          v-model="selectedMethod"
+        />
         <label for="standard">
           <span class="name">Standard Shipping</span>
           <span class="price">${{ standardPrice.toFixed(2) }}</span>
@@ -11,7 +16,12 @@
         </label>
       </div>
       <div class="shipping-option">
-        <input type="radio" id="express" value="express" v-model="selectedMethod" />
+        <input
+          type="radio"
+          id="express"
+          value="express"
+          v-model="selectedMethod"
+        />
         <label for="express">
           <span class="name">Express Shipping</span>
           <span class="price">${{ expressPrice.toFixed(2) }}</span>
@@ -24,32 +34,33 @@
 
 <script>
 export default {
-  name: 'ShippingForm',
-  
+  name: "ShippingForm",
+
   data() {
     return {
-      selectedMethod: 'standard',
+      selectedMethod: "standard",
       standardPrice: 10,
-      expressPrice: 25
+      expressPrice: 25,
     };
   },
 
   watch: {
     selectedMethod(newMethod) {
-      this.$emit('method-change', {
+      this.$emit("method-change", {
         method: newMethod,
-        price: newMethod === 'standard' ? this.standardPrice : this.expressPrice
+        price:
+          newMethod === "standard" ? this.standardPrice : this.expressPrice,
       });
-    }
+    },
   },
 
   created() {
     // Emit initial shipping method and price
-    this.$emit('method-change', {
+    this.$emit("method-change", {
       method: this.selectedMethod,
-      price: this.standardPrice
+      price: this.standardPrice,
     });
-  }
+  },
 };
 </script>
 
@@ -59,7 +70,7 @@ export default {
   border-radius: 8px;
   padding: 25px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 
   h3 {
     font-size: 18px;
@@ -70,7 +81,7 @@ export default {
     padding-bottom: 10px;
 
     &:after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: 0;
       left: 0;
@@ -96,7 +107,7 @@ export default {
 
     &:has(input:checked) {
       border-color: var(--yellow);
-      background-color: rgba(255,215,0,0.05);
+      background-color: rgba(255, 215, 0, 0.05);
     }
 
     input[type="radio"] {
@@ -127,4 +138,4 @@ export default {
     }
   }
 }
-</style> 
+</style>

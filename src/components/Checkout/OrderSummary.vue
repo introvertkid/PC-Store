@@ -34,7 +34,11 @@
       </div>
     </div>
     <div class="summary-action">
-      <button class="place-order" @click="$emit('place-order')" :disabled="!isValid">
+      <button
+        class="place-order"
+        @click="$emit('place-order')"
+        :disabled="!isValid"
+      >
         Place Order
       </button>
     </div>
@@ -43,41 +47,37 @@
 
 <script>
 export default {
-  name: 'OrderSummary',
-  
+  name: "OrderSummary",
+
   props: {
     cart: {
       type: Array,
-      required: true
+      required: true,
     },
     shippingCost: {
       type: Number,
-      required: true
+      required: true,
     },
     isValid: {
       type: Boolean,
-      required: true
-    }
+      required: true,
+    },
   },
 
   data() {
     return {
-      taxRate: 8
+      taxRate: 8,
     };
   },
 
   computed: {
     subtotal() {
       if (!this.cart || this.cart.length === 0) {
-        return '0.00';
+        return "0.00";
       }
-      
+
       return this.cart
-        .reduce(
-          (total, product) => 
-            total + this.calculatePrice(product),
-          0
-        )
+        .reduce((total, product) => total + this.calculatePrice(product), 0)
         .toFixed(2);
     },
 
@@ -91,14 +91,17 @@ export default {
         parseFloat(this.shippingCost) +
         parseFloat(this.taxAmount)
       ).toFixed(2);
-    }
+    },
   },
 
   methods: {
     calculatePrice(product) {
-      return Math.floor(product.price - (product.price * product.discount) / 100) * product.count;
-    }
-  }
+      return (
+        Math.floor(product.price - (product.price * product.discount) / 100) *
+        product.count
+      );
+    },
+  },
 };
 </script>
 
@@ -112,7 +115,7 @@ export default {
   align-self: flex-start;
   position: sticky;
   top: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 
   h3 {
     font-size: 18px;
@@ -123,7 +126,7 @@ export default {
     padding-bottom: 10px;
 
     &:after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: 0;
       left: 0;
@@ -224,7 +227,7 @@ export default {
       &:hover:not(:disabled) {
         background-color: #000;
         transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       }
 
       &:disabled {
@@ -234,4 +237,4 @@ export default {
     }
   }
 }
-</style> 
+</style>
