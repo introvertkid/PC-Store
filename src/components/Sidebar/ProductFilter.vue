@@ -9,29 +9,29 @@
           <input
             type="range"
             min="0"
-            max="5000"
-            step="100"
+            max="20000000"
+            step="1000000"
             v-model="minPrice"
             class="price-slider"
           />
           <input
             type="range"
             min="0"
-            max="5000"
-            step="100"
+            max="20000000"
+            step="1000000"
             v-model="maxPrice"
             class="price-slider"
           />
         </div>
         <div class="price-inputs">
           <div class="price-input">
-            <span>$</span>
-            <input type="number" v-model="minPrice" min="0" max="5000" />
+            <input type="number" v-model="minPrice" min="0" max="20000000" />
+            <span>₫</span>
           </div>
           <span>-</span>
           <div class="price-input">
-            <span>$</span>
-            <input type="number" v-model="maxPrice" min="0" max="5000" />
+            <input type="number" v-model="maxPrice" min="0" max="20000000" />
+            <span>₫</span>
           </div>
         </div>
       </div>
@@ -136,7 +136,7 @@ export default {
   data() {
     return {
       minPrice: 0,
-      maxPrice: 5000,
+      maxPrice: 20000000,
       sortBy: "popular",
       userNeeds: [],
       minRating: 0,
@@ -145,6 +145,9 @@ export default {
   methods: {
     setMinRating(rating) {
       this.minRating = rating;
+    },
+    formatPrice(price) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
     },
     applyFilters() {
       const filters = {
@@ -187,6 +190,7 @@ export default {
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
+  min-width: 280px;
 
   h4 {
     font-size: 18px;
@@ -242,26 +246,37 @@ export default {
     .price-inputs {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 8px;
 
       .price-input {
+        flex: 1;
+        min-width: 0;
         display: flex;
         align-items: center;
         border: 1px solid #ddd;
         border-radius: 4px;
-        padding: 3px 5px;
-
-        span {
-          color: #666;
-          margin-right: 3px;
-        }
+        padding: 3px 8px;
 
         input {
-          width: 60px;
+          width: 100%;
+          min-width: 0;
           border: none;
           outline: none;
           padding: 0;
+          text-align: right;
+          font-size: 13px;
         }
+
+        span {
+          color: #666;
+          margin-left: 3px;
+          font-weight: 500;
+          white-space: nowrap;
+        }
+      }
+
+      > span {
+        color: #666;
       }
     }
   }

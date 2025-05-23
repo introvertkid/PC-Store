@@ -22,18 +22,18 @@
             <div
               class="product"
               v-for="product in filteredProducts"
-              :key="product.id"
+              :key="product.productid"
             >
               <div class="card">
                 <div class="img-holder flex-center">
                   <div class="imgs">
                     <img
-                      :src="product.firstImg"
+                      :src="product.firstimg"
                       class="card-img-top first"
                       alt="Product Image"
                     />
                     <img
-                      :src="product.secondImg"
+                      :src="product.secondimg"
                       class="card-img-top second"
                       alt="Product Image"
                     />
@@ -55,17 +55,15 @@
                     <i class="fa-solid fa-star" style="color: grey"></i>
                   </span>
                   <p class="card-text">
-                    {{ product.title }}
+                    {{ product.productname }}
                   </p>
                   <div class="price">
                     <span style="font-weight: bold">
-                      {{
-                        `$${Math.floor(
-                          product.price - (product.price * product.discount) / 100
-                        )}.00 `
-                      }}</span
-                    >
-                    <span class="price-num"> {{ `$${product.price}.00` }}</span>
+                      {{ formatPrice(Math.floor(product.price - (product.price * product.discount) / 100)) }}
+                    </span>
+                    <span class="price-num">
+                      {{ formatPrice(product.price) }}
+                    </span>
                   </div>
                   <div class="buy">
                     <button
@@ -138,7 +136,7 @@
 
                   <!-- List view only description -->
                   <p v-if="viewMode === 'list'" class="product-description">
-                    {{ product.description || "No description available." }}
+                    {{ product.productdescription || "No description available." }}
                   </p>
                 </div>
                 <span class="discount">{{ `-${product.discount}%` }}</span>
@@ -160,8 +158,8 @@
                       this.$router.push({
                         name: 'product',
                         params: {
-                          id: product.id,
-                          description: product.description,
+                          id: product.productid,
+                          description: product.productdescription,
                         },
                       })
                     "
@@ -214,6 +212,9 @@ export default {
     },
   },
   methods: {
+    formatPrice(price) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+    },
     // Add Product To Cart
     addItemToCart(product) {
       let exists = false;
@@ -477,7 +478,7 @@ export default {
 
   .content-column {
     width: 100%;
-    padding-left: 20px; /* Increase padding from 10px to 20px to match contact page spacing */
+    padding-left: 20px;
 
     .all-products-section {
       width: 100%;
@@ -521,9 +522,12 @@ export default {
 
       .products-section {
         display: flex;
+        gap: 20px;
+        padding: 0 20px;
 
         .products-container {
           flex: 1;
+          max-width: calc(100% - 270px);
 
           &.grid {
             display: grid;
@@ -537,18 +541,129 @@ export default {
             @media (max-width: 767px) {
               grid-template-columns: repeat(1, 1fr);
             }
+
+            .product {
+              .card {
+                width: 100%;
+                margin: 0;
+                height: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+
+                .img-holder {
+                  height: 180px;
+                  width: 100%;
+                  padding: 10px;
+                  background: #f8f8f8;
+
+                  .imgs {
+                    height: 100%;
+                    width: 100%;
+                    position: relative;
+
+                    img {
+                      position: absolute;
+                      top: 0;
+                      left: 0;
+                      width: 100%;
+                      height: 100%;
+                      object-fit: contain;
+                      padding: 10px;
+                    }
+                  }
+                }
+
+                .card-body {
+                  padding: 10px;
+
+                  .card-text {
+                    font-size: 13px;
+                    height: 32px;
+                    margin: 5px 0;
+                    overflow: hidden;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                  }
+
+                  .price {
+                    margin: 8px 0;
+                    font-size: 14px;
+                    display: flex;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                  }
+
+                  .price-num {
+                    text-decoration: line-through;
+                    color: grey;
+                    font-size: 13px;
+                  }
+
+                  .buy {
+                    .add-product {
+                      padding: 8px;
+                      font-size: 13px;
+                      height: 32px;
+                    }
+                  }
+                }
+
+                .discount {
+                  font-size: 11px;
+                  padding: 2px 6px;
+                  top: 8px;
+                  left: 8px;
+                }
+
+                .product-options {
+                  right: 8px;
+                  top: 8px;
+                  
+                  > div {
+                    margin-bottom: 8px;
+                    font-size: 14px;
+                  }
+                }
+              }
+            }
           }
 
           &.list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            .product {
+              .card {
+                display: flex;
+                max-width: 100%;
+
+                .img-holder {
+                  width: 180px !important;
+                  min-width: 180px !important;
+                  height: 180px !important;
+                }
+
+                .card-body {
+                  flex: 1;
+                  padding: 15px;
+
+                  .card-text {
+                    height: auto;
+                    -webkit-line-clamp: unset;
+                  }
+                }
+              }
+            }
           }
         }
 
         .filter-sidebar {
-          width: 280px;
-          margin-left: 20px;
+          width: 250px;
+          min-width: 250px;
+          height: fit-content;
+          background: #fff;
+          border-radius: 8px;
+          padding: 15px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
           @media (max-width: 991px) {
             display: none;
@@ -559,12 +674,51 @@ export default {
   }
 }
 
-
 .product {
   .card {
     border: none;
     position: relative;
     margin-bottom: 24px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    .img-holder {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      overflow: hidden;
+      background: #f8f8f8;
+      border-radius: 8px 8px 0 0;
+
+      .imgs {
+        width: 100%;
+        height: 100%;
+        position: relative;
+
+        img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          transition: opacity 0.3s ease;
+          padding: 10px;
+        }
+
+        .first {
+          opacity: 1;
+          z-index: 1;
+        }
+
+        .second {
+          opacity: 0;
+          z-index: 0;
+        }
+      }
+    }
 
     .product-options {
       position: absolute;
@@ -572,6 +726,7 @@ export default {
       top: 5%;
       opacity: 0;
       transition: 0.3s;
+      z-index: 2;
       > div {
         margin-bottom: 12px;
         font-size: 17px;
@@ -581,40 +736,53 @@ export default {
           pointer-events: none;
         }
       }
-      .fav {
-        cursor: pointer;
-        i {
-          pointer-events: none;
-        }
-      }
-      .compare {
-        cursor: pointer;
-        i {
-          pointer-events: none;
-        }
-      }
     }
-    .img-holder {
-      .first {
-        position: absolute;
-        transition: 0.5s;
-      }
-    }
+
     .card-body {
+      padding: 15px;
+
       .card-text {
         margin: 5px 0;
         font-size: 15px;
+        height: 40px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
+
       .price {
-        margin-bottom: 5px;
-        font-size: 18px;
-        .price-num {
-          text-decoration: line-through;
-          color: grey;
-          font-size: 15px;
-        }
+        margin: 8px 0;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
       }
+
+      .price-num {
+        text-decoration: line-through;
+        color: grey;
+        font-size: 13px;
+      }
+
       .buy {
+        .add-product {
+          color: var(--bg-color);
+          border: none;
+          font-weight: 500;
+          background-color: #e3e3e3;
+          padding: 12px;
+          border-radius: 6px;
+          transition: 0.3s;
+          width: 100%;
+          cursor: pointer;
+
+          &:hover {
+            background-color: var(--yellow);
+          }
+        }
+
         .modal-content {
           .modal-header {
             border-bottom: none;
@@ -673,37 +841,44 @@ export default {
             }
           }
         }
-        .add-product {
-          color: var(--bg-color);
-          border: none;
-          font-weight: 500;
-          background-color: #e3e3e3;
-          padding: 10px;
-          border-radius: 6px;
-          transition: 0.3s;
-          width: 100%;
-        }
       }
     }
+
     .discount {
       position: absolute;
       top: 10px;
       left: 15px;
-      color: red;
+      background-color: #ff4444;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      z-index: 2;
     }
+
     &:hover {
-      .buy {
-        .add-product {
-          background-color: var(--yellow);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+      .img-holder {
+        .imgs {
+          .first {
+            opacity: 0;
+          }
+          .second {
+            opacity: 1;
+          }
         }
       }
+
       .product-options {
         opacity: 1;
         right: 5%;
       }
-      .img-holder {
-        .first {
-          opacity: 0;
+
+      .buy {
+        .add-product {
+          background-color: var(--yellow);
         }
       }
     }

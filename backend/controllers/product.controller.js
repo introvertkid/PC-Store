@@ -3,7 +3,19 @@ import db from '../database/dbConnection.js';
 // Lấy tất cả sản phẩm
 export const getAllProducts = async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM products');
+        const result = await db.query(`
+            SELECT p.*, 
+                   pi.imageurl as firstimg,
+                   (SELECT pi2.imageurl 
+                    FROM product_images pi2 
+                    WHERE pi2.productid = p.productid 
+                    AND pi2.imageid > pi.imageid 
+                    LIMIT 1) as secondimg
+            FROM products p
+            LEFT JOIN product_images pi ON p.productid = pi.productid
+            WHERE pi.isthumbnail = true
+        `);
+        
         res.status(200).json(result.rows);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -15,13 +27,22 @@ export const filterProductsByPrice = async (req, res) => {
     try {
         const { minPrice = 0, maxPrice = 5000 } = req.query;
 
-        const result = await db.query(
-            'SELECT * FROM products WHERE price >= $1 AND price <= $2',
-            [minPrice, maxPrice]
-        );
+        const result = await db.query(`
+            SELECT p.*, 
+                   pi.imageurl as firstimg,
+                   (SELECT pi2.imageurl 
+                    FROM product_images pi2 
+                    WHERE pi2.productid = p.productid 
+                    AND pi2.imageid > pi.imageid 
+                    LIMIT 1) as secondimg
+            FROM products p
+            LEFT JOIN product_images pi ON p.productid = pi.productid
+            WHERE pi.isthumbnail = true
+            AND p.price >= $1 AND p.price <= $2
+        `, [minPrice, maxPrice]);
 
         // Tính giá sau khi giảm giá
-        const productsWithDiscountedPrice = result.rows.map(product => {
+        const processedProducts = result.rows.map(product => {
             const discountedPrice = product.price - (product.price * product.discount / 100);
             return {
                 ...product,
@@ -29,7 +50,7 @@ export const filterProductsByPrice = async (req, res) => {
             };
         });
 
-        res.status(200).json(productsWithDiscountedPrice);
+        res.status(200).json(processedProducts);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -49,11 +70,20 @@ export const advancedFilterProducts = async (req, res) => {
 
         // Xây dựng câu query cơ bản
         let query = `
-            SELECT p.*, c.categoryname
+            SELECT p.*, 
+                   c.categoryname,
+                   pi.imageurl as firstimg,
+                   (SELECT pi2.imageurl 
+                    FROM product_images pi2 
+                    WHERE pi2.productid = p.productid 
+                    AND pi2.imageid > pi.imageid 
+                    LIMIT 1) as secondimg
             FROM products p
             LEFT JOIN product_category pc ON p.productid = pc.productid
             LEFT JOIN categories c ON pc.categoryid = c.categoryid
-            WHERE p.price >= $1 AND p.price <= $2
+            LEFT JOIN product_images pi ON p.productid = pi.productid
+            WHERE pi.isthumbnail = true
+            AND p.price >= $1 AND p.price <= $2
         `;
 
         const params = [minPrice, maxPrice];
