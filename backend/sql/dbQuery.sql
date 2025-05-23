@@ -247,4 +247,7 @@ SELECT
     sp.id, sp.image, TRUE
 FROM staging_products sp
 WHERE sp.image IS NOT NULL
-ON CONFLICT (imageID) DO NOTHING;
+ON CONFLICT (imageID) DO NOTHING;   
+
+
+
