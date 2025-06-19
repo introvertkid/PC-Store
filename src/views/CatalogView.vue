@@ -8,10 +8,16 @@
           <h2>All Products</h2>
           <div class="view-options">
             <span class="view-text">View as:</span>
-            <button :class="{'active': viewMode === 'grid'}" @click="viewMode = 'grid'">
+            <button
+              :class="{ active: viewMode === 'grid' }"
+              @click="viewMode = 'grid'"
+            >
               <i class="fa-solid fa-grip"></i>
             </button>
-            <button :class="{'active': viewMode === 'list'}" @click="viewMode = 'list'">
+            <button
+              :class="{ active: viewMode === 'list' }"
+              @click="viewMode = 'list'"
+            >
               <i class="fa-solid fa-list"></i>
             </button>
           </div>
@@ -59,7 +65,14 @@
                   </p>
                   <div class="price">
                     <span style="font-weight: bold">
-                      {{ formatPrice(Math.floor(product.price - (product.price * product.discount) / 100)) }}
+                      {{
+                        formatPrice(
+                          Math.floor(
+                            product.price -
+                              (product.price * product.discount) / 100
+                          )
+                        )
+                      }}
                     </span>
                     <span class="price-num">
                       {{ formatPrice(product.price) }}
@@ -106,7 +119,9 @@
                                   data-bs-dismiss="modal"
                                   aria-label="Close"
                                 >
-                                  View My Cart ({{ this.$store.state.cartTotal }})
+                                  View My Cart ({{
+                                    this.$store.state.cartTotal
+                                  }})
                                 </button>
                               </router-link>
                               <router-link class="checkout" to="/checkout">
@@ -136,7 +151,9 @@
 
                   <!-- List view only description -->
                   <p v-if="viewMode === 'list'" class="product-description">
-                    {{ product.productdescription || "No description available." }}
+                    {{
+                      product.productdescription || "No description available."
+                    }}
                   </p>
                 </div>
                 <span class="discount">{{ `-${product.discount}%` }}</span>
@@ -172,7 +189,10 @@
           </div>
 
           <div class="filter-sidebar">
-            <ProductFilter @filter-applied="applyFilters" :isLoading="isLoading" />
+            <ProductFilter
+              @filter-applied="applyFilters"
+              :isLoading="isLoading"
+            />
           </div>
         </div>
       </div>
@@ -183,7 +203,7 @@
 <script>
 import { mapState } from "vuex";
 import ProductFilter from "@/components/Sidebar/ProductFilter.vue";
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   components: {
@@ -213,7 +233,10 @@ export default {
   },
   methods: {
     formatPrice(price) {
-      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+      return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(price);
     },
     // Add Product To Cart
     addItemToCart(product) {
@@ -317,7 +340,7 @@ export default {
       this.$router.push({
         query: {
           ...this.$route.query,
-          category: category.id
+          category: category.id,
         },
       });
     },
@@ -350,13 +373,16 @@ export default {
       try {
         this.isLoading = true;
 
-        const response = await axios.get('http://localhost:3000/api/products/advanced-filter', {
-          params: this.filters
-        });
+        const response = await axios.get(
+          "http://localhost:3000/api/products/advanced-filter",
+          {
+            params: this.filters,
+          }
+        );
 
         this.catalogProducts = response.data;
       } catch (error) {
-        console.error('Lỗi khi lọc sản phẩm:', error);
+        console.error("Lỗi khi lọc sản phẩm:", error);
         // Fallback to client filtering if API fails
         this.applyClientFilters();
       } finally {
@@ -370,7 +396,9 @@ export default {
 
       // Filter by category if selected
       if (this.filters.categoryId) {
-        products = products.filter(p => p.categoryId === this.filters.categoryId);
+        products = products.filter(
+          (p) => p.categoryId === this.filters.categoryId
+        );
       }
 
       // Filter by price range
@@ -421,7 +449,7 @@ export default {
   async mounted() {
     try {
       // Lấy tất cả sản phẩm từ API
-      const response = await axios.get('http://localhost:3000/api/products');
+      const response = await axios.get("http://localhost:3000/api/products");
       this.catalogProducts = response.data;
 
       // Các đoạn code khác giữ nguyên
@@ -460,11 +488,15 @@ export default {
       if (query.minRating) this.filters.minRating = parseInt(query.minRating);
 
       // Áp dụng bộ lọc ban đầu nếu có
-      if (this.filters.categoryId || this.filters.minPrice !== 0 || this.filters.maxPrice !== 5000) {
+      if (
+        this.filters.categoryId ||
+        this.filters.minPrice !== 0 ||
+        this.filters.maxPrice !== 5000
+      ) {
         this.applyFilters();
       }
     } catch (error) {
-      console.error('Lỗi khi khởi tạo dữ liệu:', error);
+      console.error("Lỗi khi khởi tạo dữ liệu:", error);
       // Fallback to Vuex store data if API fails
       this.catalogProducts = [...this.allProducts];
     }
@@ -620,7 +652,7 @@ export default {
                 .product-options {
                   right: 8px;
                   top: 8px;
-                  
+
                   > div {
                     margin-bottom: 8px;
                     font-size: 14px;
