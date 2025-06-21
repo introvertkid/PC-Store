@@ -442,8 +442,9 @@ export default createStore({
       ? JSON.parse(localStorage.getItem("ProductStatus"))
       : [],
 
-    // Thêm state cho danh mục được chọn
-    selectedCategoryId: null,
+    selectedCategoryId: null, // Thêm state cho danh mục được chọn
+    isLoggedIn: false, // Trạng thái đăng nhập
+    user: null, // Thông tin người dùng
   },
 
   mutations: {
@@ -490,6 +491,20 @@ export default createStore({
     // Thêm mutation để cập nhật danh mục được chọn
     setSelectedCategory(state, categoryId) {
       state.selectedCategoryId = categoryId;
+    },
+
+    setLoginState(state, payload) {
+      state.isLoggedIn = payload.isLoggedIn;
+      state.user = payload.user;
+    },
+  },
+  actions: {
+    login({ commit }, user) {
+      // Giả lập đăng nhập thành công
+      commit("setLoginState", { isLoggedIn: true, user });
+    },
+    logout({ commit }) {
+      commit("setLoginState", { isLoggedIn: false, user: null });
     },
   },
 });
