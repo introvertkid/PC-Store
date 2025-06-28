@@ -16,7 +16,24 @@ export const getAllProducts = async (req, res) => {
             WHERE pi.isthumbnail = true
         `);
         
-        res.status(200).json(result.rows);
+        // Transform data để phù hợp với frontend
+        const transformedProducts = result.rows.map(product => ({
+            id: product.productid,
+            productid: product.productid, // Để backward compatibility
+            firstImg: product.firstimg,
+            secondImg: product.secondimg || product.firstimg,
+            title: product.productname,
+            price: parseFloat(product.price),
+            discount: Math.floor(Math.random() * 30) + 5,
+            stars: Math.floor(Math.random() * 2) + 4,
+            description: product.productdescription || product.productname,
+            count: 1,
+            wishlist: false,
+            compare: false,
+            name: "all"
+        }));
+        
+        res.status(200).json(transformedProducts);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -138,6 +155,138 @@ export const advancedFilterProducts = async (req, res) => {
         res.status(200).json(processedProducts);
     } catch (error) {
         console.error('Error in advancedFilterProducts:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Lấy sản phẩm phổ biến (random)
+export const getPopularProducts = async (req, res) => {
+    try {
+        const { limit = 8 } = req.query;
+        
+        const result = await db.query(`
+            SELECT p.*, 
+                   pi.imageurl as firstimg,
+                   (SELECT pi2.imageurl 
+                    FROM product_images pi2 
+                    WHERE pi2.productid = p.productid 
+                    AND pi2.imageid > pi.imageid 
+                    LIMIT 1) as secondimg
+            FROM products p
+            LEFT JOIN product_images pi ON p.productid = pi.productid
+            WHERE pi.isthumbnail = true
+            ORDER BY RANDOM()
+            LIMIT $1
+        `, [limit]);
+
+        // Transform data để phù hợp với frontend
+        const transformedProducts = result.rows.map(product => ({
+            id: product.productid,
+            productid: product.productid, // Để backward compatibility
+            firstImg: product.firstimg,
+            secondImg: product.secondimg || product.firstimg,
+            title: product.productname,
+            price: parseFloat(product.price),
+            discount: Math.floor(Math.random() * 30) + 5, // Random discount 5-35%
+            stars: Math.floor(Math.random() * 2) + 4, // Random stars 4-5
+            description: product.productdescription || product.productname,
+            count: 1,
+            wishlist: false,
+            compare: false,
+            name: "popular"
+        }));
+
+        res.status(200).json(transformedProducts);
+    } catch (error) {
+        console.error('Error in getPopularProducts:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Lấy sản phẩm mới nhất (random)
+export const getLatestProducts = async (req, res) => {
+    try {
+        const { limit = 8 } = req.query;
+        
+        const result = await db.query(`
+            SELECT p.*, 
+                   pi.imageurl as firstimg,
+                   (SELECT pi2.imageurl 
+                    FROM product_images pi2 
+                    WHERE pi2.productid = p.productid 
+                    AND pi2.imageid > pi.imageid 
+                    LIMIT 1) as secondimg
+            FROM products p
+            LEFT JOIN product_images pi ON p.productid = pi.productid
+            WHERE pi.isthumbnail = true
+            ORDER BY RANDOM()
+            LIMIT $1
+        `, [limit]);
+
+        // Transform data để phù hợp với frontend
+        const transformedProducts = result.rows.map(product => ({
+            id: product.productid,
+            productid: product.productid, // Để backward compatibility
+            firstImg: product.firstimg,
+            secondImg: product.secondimg || product.firstimg,
+            title: product.productname,
+            price: parseFloat(product.price),
+            discount: Math.floor(Math.random() * 25) + 10, // Random discount 10-35%
+            stars: Math.floor(Math.random() * 2) + 4, // Random stars 4-5
+            description: product.productdescription || product.productname,
+            count: 1,
+            wishlist: false,
+            compare: false,
+            name: "latest"
+        }));
+
+        res.status(200).json(transformedProducts);
+    } catch (error) {
+        console.error('Error in getLatestProducts:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Lấy sản phẩm nổi bật (random)
+export const getFeaturedProducts = async (req, res) => {
+    try {
+        const { limit = 8 } = req.query;
+        
+        const result = await db.query(`
+            SELECT p.*, 
+                   pi.imageurl as firstimg,
+                   (SELECT pi2.imageurl 
+                    FROM product_images pi2 
+                    WHERE pi2.productid = p.productid 
+                    AND pi2.imageid > pi.imageid 
+                    LIMIT 1) as secondimg
+            FROM products p
+            LEFT JOIN product_images pi ON p.productid = pi.productid
+            WHERE pi.isthumbnail = true
+            ORDER BY RANDOM()
+            LIMIT $1
+        `, [limit]);
+
+        // Transform data để phù hợp với frontend
+        const transformedProducts = result.rows.map(product => ({
+            id: product.productid,
+            productid: product.productid, // Để backward compatibility
+            firstImg: product.firstimg,
+            secondImg: product.secondimg || product.firstimg,
+            title: product.productname,
+            price: parseFloat(product.price),
+            discount: Math.floor(Math.random() * 35) + 15, // Random discount 15-50%
+            stars: Math.floor(Math.random() * 2) + 4, // Random stars 4-5
+            description: product.productdescription || product.productname,
+            count: 1,
+            wishlist: false,
+            compare: false,
+            name: "featured"
+        }));
+
+        res.status(200).json(transformedProducts);
+    } catch (error) {
+        console.error('Error in getFeaturedProducts:', error);
         res.status(500).json({ message: error.message });
     }
 };

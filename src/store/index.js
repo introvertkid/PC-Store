@@ -1,4 +1,5 @@
 import { createStore } from "vuex";
+import api from "@/utils/api";
 
 export default createStore({
   state: {
@@ -488,23 +489,63 @@ export default createStore({
         return e.name == "featured";
       });
     },
-    // Thêm mutation để cập nhật danh mục được chọn
-    setSelectedCategory(state, categoryId) {
-      state.selectedCategoryId = categoryId;
+    setPopularProducts(state, products) {
+      state.popularProducts = products;
     },
-
+    setLatestProducts(state, products) {
+      state.latestProducts = products;
+    },
+    setFeaturedProducts(state, products) {
+      state.featuredProducts = products;
+    },
     setLoginState(state, payload) {
       state.isLoggedIn = payload.isLoggedIn;
       state.user = payload.user;
     },
+    setSelectedCategory(state, categoryId) {
+      state.selectedCategoryId = categoryId;
+    },
   },
   actions: {
     login({ commit }, user) {
-      // Giả lập đăng nhập thành công
       commit("setLoginState", { isLoggedIn: true, user });
     },
     logout({ commit }) {
       commit("setLoginState", { isLoggedIn: false, user: null });
+    },
+    async fetchPopularProducts({ commit }) {
+      try {
+        const response = await api.getPopularProducts();
+        commit("setPopularProducts", response.data);
+      } catch (error) {
+        console.error("Error fetching popular products:", error);
+        commit("getPopularProducts");
+      }
+    },
+    async fetchLatestProducts({ commit }) {
+      try {
+        const response = await api.getLatestProducts();
+        commit("setLatestProducts", response.data);
+      } catch (error) {
+        console.error("Error fetching latest products:", error);
+        commit("getPopularProducts");
+      }
+    },
+    async fetchFeaturedProducts({ commit }) {
+      try {
+        const response = await api.getFeaturedProducts();
+        commit("setFeaturedProducts", response.data);
+      } catch (error) {
+        console.error("Error fetching featured products:", error);
+        commit("getPopularProducts");
+      }
+    },
+    async fetchAllHomeProducts({ dispatch }) {
+      await Promise.all([
+        dispatch("fetchPopularProducts"),
+        dispatch("fetchLatestProducts"),
+        dispatch("fetchFeaturedProducts"),
+      ]);
     },
   },
 });

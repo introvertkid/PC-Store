@@ -35,13 +35,13 @@
                 <div class="img-holder flex-center">
                   <div class="imgs">
                     <img
-                      :src="product.firstimg"
+                      :src="product.firstImg"
                       class="card-img-top first"
                       alt="Product Image"
                     />
                     <!-- Loại bỏ ảnh thứ 2 để tránh lỗi hover
                     <img
-                      :src="product.secondimg"
+                      :src="product.secondImg"
                       class="card-img-top second"
                       alt="Product Image"
                     />
@@ -64,7 +64,7 @@
                     <i class="fa-solid fa-star" style="color: grey"></i>
                   </span>
                   <p class="card-text">
-                    {{ product.productname }}
+                    {{ product.title }}
                   </p>
                   <div class="price">
                     <span style="font-weight: bold">
@@ -95,7 +95,7 @@
                   <!-- List view only description -->
                   <p v-if="viewMode === 'list'" class="product-description">
                     {{
-                      product.productdescription || "No description available."
+                      product.description || "No description available."
                     }}
                   </p>
                 </div>
@@ -119,7 +119,7 @@
                         name: 'product',
                         params: {
                           id: product.productid,
-                          description: product.productdescription,
+                          description: product.description,
                         },
                       })
                     "
@@ -241,7 +241,7 @@
             </h2>
             <div class="product-image-container">
               <img
-                :src="addedProduct.firstimg || addedProduct.firstImg || addedProduct.images?.[0]?.url"
+                :src="addedProduct.firstImg || addedProduct.firstimg || addedProduct.images?.[0]?.url"
                 alt="Product img"
                 v-if="addedProduct"
               />
@@ -255,7 +255,7 @@
               "
               v-if="addedProduct"
             >
-              {{ addedProduct.productname || addedProduct.title }}
+              {{ addedProduct.title || addedProduct.productname }}
             </span>
           </div>
           <div class="modal-buttons">
@@ -498,7 +498,7 @@ export default {
       }
       product.wishlist = !product.wishlist;
       localStorage.setItem(
-        `${product.productname}Wishlist_${product.productid}`,
+        `${product.title}Wishlist_${product.productid}`,
         product.wishlist
       );
     },
@@ -531,7 +531,7 @@ export default {
       }
       product.compare = !product.compare;
       localStorage.setItem(
-        `${product.productname}Compare_${product.productid}`,
+        `${product.title}Compare_${product.productid}`,
         product.compare
       );
     },
@@ -682,10 +682,10 @@ export default {
       // Get the Active Product Icons
       this.catalogProducts.forEach((product) => {
         const wishlist = localStorage.getItem(
-          `${product.productname}Wishlist_${product.productid}`
+          `${product.title}Wishlist_${product.productid}`
         );
         const compare = localStorage.getItem(
-          `${product.productname}Compare_${product.productid}`
+          `${product.title}Compare_${product.productid}`
         );
 
         if (wishlist !== null) {

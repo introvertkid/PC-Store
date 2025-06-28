@@ -358,30 +358,79 @@ export default {
       }
     }
   }
+  // Đảm bảo tất cả swiper slides có chiều cao bằng nhau
+  .swiper-slide {
+    height: auto;
+    display: flex;
+    align-items: stretch;
+  }
+
   .card {
     border: none;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+
     .img-holder {
+      flex-shrink: 0;
+      height: 200px; // Chiều cao cố định cho ảnh
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+
+      .imgs {
+        position: relative;
+        width: 100%;
+        height: 100%;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+      }
+
       .first {
         position: absolute;
         transition: 0.5s;
       }
     }
+
     .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 15px 10px;
+
       .card-text {
         margin: 5px 0;
         font-size: 15px;
+        height: 40px; // Chiều cao cố định cho text
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 20px;
       }
+
       .price {
-        margin-bottom: 5px;
+        margin-bottom: 10px;
         font-size: 18px;
+        margin-top: auto; // Đẩy price xuống dưới
+
         .price-num {
           text-decoration: line-through;
           color: grey;
           font-size: 15px;
         }
       }
+
       .buy {
+        margin-top: 10px;
+
         .add-product {
           color: var(--bg-color);
           border: none;

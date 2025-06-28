@@ -18,7 +18,7 @@ import CategoryShop from "@/components/Home/CategoryShop.vue";
 import SecondExtraBanner from "@/components/Home/SecondExtraBanner.vue";
 import BlogHome from "@/components/Home/BlogHome.vue";
 
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapActions } from "vuex";
 export default {
   components: {
     MainBanner,
@@ -31,10 +31,10 @@ export default {
     ...mapState(["popularProducts", "latestProducts", "featuredProducts"]),
   },
   methods: {
-    ...mapMutations(["getPopularProducts"]),
+    ...mapActions(["fetchAllHomeProducts"]),
   },
   mounted() {
-    this.$store.commit("getPopularProducts");
+    this.fetchAllHomeProducts();
   },
 };
 </script>
