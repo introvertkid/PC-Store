@@ -19,13 +19,9 @@
         </span>
         <div class="price">
           <span style="font-weight: bold">
-            {{
-              `$${Math.floor(
-                product.price - (product.price * product.discount) / 100
-              )}.00 `
-            }}</span
-          >
-          <span class="price-num"> {{ `$${product.price}.00` }}</span>
+            {{ formatDiscountedPrice(product) }}
+          </span>
+          <span class="price-num"> {{ formatOriginalPrice(product) }}</span>
         </div>
         <p class="description">
           Elegant and comfy, this embroidered A-line dress which has a round
@@ -80,11 +76,7 @@
           >
             Total
           </span>
-          : ${{
-            Math.floor(
-              product.price - (product.price * product.discount) / 100
-            ) * product.count
-          }}
+          : {{ formatTotalPrice(product) }}
         </div>
         <div class="buy">
           <button
@@ -345,6 +337,7 @@
 
 <script>
 import ProductSwiper from "@/components/Home/ProductsSwiper.vue";
+import { formatPrice } from "@/utils/currency.js";
 
 import { mapState, mapMutations } from "vuex";
 
@@ -382,6 +375,23 @@ export default {
       this.myProduct = this.allProducts.filter(
         (e) => e.id == this.$route.params.id
       );
+    },
+    formatDiscountedPrice(product) {
+      const price = parseFloat(product.price) || 0;
+      const discount = parseFloat(product.discount) || 0;
+      const discountedPrice = Math.floor(price - (price * discount) / 100);
+      return formatPrice(discountedPrice);
+    },
+    formatOriginalPrice(product) {
+      const price = parseFloat(product.price) || 0;
+      return formatPrice(price);
+    },
+    formatTotalPrice(product) {
+      const price = parseFloat(product.price) || 0;
+      const discount = parseFloat(product.discount) || 0;
+      const discountedPrice = Math.floor(price - (price * discount) / 100);
+      const total = discountedPrice * product.count;
+      return formatPrice(total);
     },
     // Zooming On Product Image
     zooming() {

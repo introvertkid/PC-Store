@@ -47,13 +47,9 @@
             </p>
             <div class="price">
               <span style="font-weight: bold">
-                {{
-                  `$${Math.floor(
-                    product.price - (product.price * product.discount) / 100
-                  )}.00 `
-                }}</span
-              >
-              <span class="price-num"> {{ `$${product.price}.00` }}</span>
+                {{ formatDiscountedPrice(product) }}
+              </span>
+              <span class="price-num"> {{ formatOriginalPrice(product) }}</span>
             </div>
             <div class="buy">
               <button
@@ -168,6 +164,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 
 import { mapMutations, mapState } from "vuex";
+import { formatPrice } from "@/utils/currency.js";
 
 export default {
   data() {
@@ -204,6 +201,16 @@ export default {
     ...mapMutations(["getProductStatus"]),
     handleResize() {
       this.window.width = window.innerWidth;
+    },
+    formatDiscountedPrice(product) {
+      const price = parseFloat(product.price) || 0;
+      const discount = parseFloat(product.discount) || 0;
+      const discountedPrice = Math.floor(price - (price * discount) / 100);
+      return formatPrice(discountedPrice);
+    },
+    formatOriginalPrice(product) {
+      const price = parseFloat(product.price) || 0;
+      return formatPrice(price);
     },
     // Add Product To Cart
     setCartToLS() {
