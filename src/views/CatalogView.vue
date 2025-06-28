@@ -1,3 +1,4 @@
+/catalog2 //catalog
 <!-- eslint-disable prettier/prettier, vue/no-deprecated-destroyed-lifecycle -->
 <template>
   <div class="catalog-container">
@@ -27,7 +28,7 @@
           <div class="products-container" :class="viewMode">
             <div
               class="product"
-              v-for="product in filteredProducts"
+              v-for="product in paginatedProducts"
               :key="product.productid"
             >
               <div class="card">
@@ -38,11 +39,13 @@
                       class="card-img-top first"
                       alt="Product Image"
                     />
+                    <!-- Loại bỏ ảnh thứ 2 để tránh lỗi hover
                     <img
                       :src="product.secondimg"
                       class="card-img-top second"
                       alt="Product Image"
                     />
+                    -->
                   </div>
                 </div>
                 <div class="card-body">
@@ -68,85 +71,25 @@
                       {{
                         formatPrice(
                           Math.floor(
-                            product.price -
-                              (product.price * product.discount) / 100
+                            Number(product.price) -
+                              (Number(product.price) * Number(product.discount || 0)) / 100
                           )
                         )
                       }}
                     </span>
                     <span class="price-num">
-                      {{ formatPrice(product.price) }}
+                      {{ formatPrice(Number(product.price)) }}
                     </span>
                   </div>
                   <div class="buy">
                     <button
-                      @click="addItemToCart(product)"
+                      @click="addItemToCart(product, $event)"
                       type="button"
                       class="add-product"
-                      data-bs-toggle="modal"
-                      data-bs-target="#exampleModal"
                     >
                       ADD TO CART
                     </button>
-                    <!-- Modal -->
-                    <div
-                      class="modal fade"
-                      id="exampleModal"
-                      tabindex="-1"
-                      aria-labelledby="exampleModalLabel"
-                      aria-hidden="true"
-                    >
-                      <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <button
-                              type="button"
-                              class="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"
-                            ></button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="modal-info">
-                              <h2>
-                                Product Added Successfully to the Cart
-                                <i class="fa-regular fa-circle-check"></i>
-                              </h2>
-                            </div>
-                            <div class="modal-buttons">
-                              <router-link class="view-cart" to="/my-cart">
-                                <button
-                                  data-bs-dismiss="modal"
-                                  aria-label="Close"
-                                >
-                                  View My Cart ({{
-                                    this.$store.state.cartTotal
-                                  }})
-                                </button>
-                              </router-link>
-                              <router-link class="checkout" to="/checkout">
-                                <button
-                                  data-bs-dismiss="modal"
-                                  aria-label="Close"
-                                >
-                                  Checkout
-                                </button>
-                              </router-link>
-                            </div>
-                            <div class="continue">
-                              <router-link to="/catalog">
-                                <button
-                                  data-bs-dismiss="modal"
-                                  aria-label="Close"
-                                >
-                                  Continue Shopping
-                                </button>
-                              </router-link>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+
                   </div>
 
                   <!-- List view only description -->
@@ -156,7 +99,7 @@
                     }}
                   </p>
                 </div>
-                <span class="discount">{{ `-${product.discount}%` }}</span>
+                <span class="discount">{{ `-${Number(product.discount || 0)}%` }}</span>
                 <div class="product-options">
                   <div class="fav" @click="toggleFavourite(product)">
                     <i v-if="!product.wishlist" class="fa-regular fa-heart"></i>
@@ -195,6 +138,148 @@
             />
           </div>
         </div>
+
+        <!-- Pagination Section -->
+        <div class="pagination-section" v-if="totalPages > 1">
+          <div class="pagination-info">
+            <div class="results-info">
+              {{ paginationInfo }}
+            </div>
+            <div class="items-per-page">
+              <label>Hiển thị:</label>
+              <select
+                :value="itemsPerPage"
+                @change="changeItemsPerPage(parseInt($event.target.value))"
+                class="items-select"
+              >
+                <option value="8">8</option>
+                <option value="12">12</option>
+                <option value="16">16</option>
+                <option value="24">24</option>
+                <option value="48">48</option>
+              </select>
+              <span>sản phẩm/trang</span>
+            </div>
+          </div>
+
+          <div class="pagination-controls">
+            <button
+              @click="goToFirstPage"
+              :disabled="currentPage === 1"
+              class="pagination-btn first"
+            >
+              <i class="fa-solid fa-angles-left"></i>
+            </button>
+
+            <button
+              @click="goToPrevPage"
+              :disabled="currentPage === 1"
+              class="pagination-btn prev"
+            >
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+
+            <div class="pagination-numbers">
+              <button
+                v-for="page in visiblePageNumbers"
+                :key="page"
+                @click="changePage(page)"
+                :class="['pagination-number', {
+                  'active': page === currentPage,
+                  'dots': page === '...'
+                }]"
+                :disabled="page === '...'"
+              >
+                {{ page }}
+              </button>
+            </div>
+
+            <button
+              @click="goToNextPage"
+              :disabled="currentPage === totalPages"
+              class="pagination-btn next"
+            >
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+
+            <button
+              @click="goToLastPage"
+              :disabled="currentPage === totalPages"
+              class="pagination-btn last"
+            >
+              <i class="fa-solid fa-angles-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Modal -->
+  <div
+    class="modal fade"
+    id="cartModal"
+    tabindex="-1"
+    aria-labelledby="cartModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-info">
+            <h2>
+              Product Added Successfully to the Cart
+              <i class="fa-regular fa-circle-check"></i>
+            </h2>
+            <div class="product-image-container">
+              <img
+                :src="addedProduct.firstimg || addedProduct.firstImg || addedProduct.images?.[0]?.url"
+                alt="Product img"
+                v-if="addedProduct"
+              />
+            </div>
+            <span
+              style="
+                color: grey;
+                text-align: center;
+                margin-bottom: 20px;
+                display: block;
+              "
+              v-if="addedProduct"
+            >
+              {{ addedProduct.productname || addedProduct.title }}
+            </span>
+          </div>
+          <div class="modal-buttons">
+            <router-link class="view-cart" to="/my-cart">
+              <button data-bs-dismiss="modal" aria-label="Close">
+                VIEW MY CART ({{ this.$store.state.cartTotal }})
+              </button>
+            </router-link>
+            <router-link class="checkout" to="/checkout">
+              <button data-bs-dismiss="modal" aria-label="Close">
+                CHECKOUT
+              </button>
+            </router-link>
+          </div>
+          <div class="continue">
+            <button
+              @click="closeModal"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -222,6 +307,10 @@ export default {
         minRating: 0,
       },
       isLoading: false,
+      addedProduct: "",
+      // Pagination data
+      currentPage: 1,
+      itemsPerPage: 12,
     };
   },
   computed: {
@@ -229,6 +318,63 @@ export default {
 
     filteredProducts() {
       return this.catalogProducts;
+    },
+
+    // Pagination computed properties
+    totalProducts() {
+      return this.filteredProducts.length;
+    },
+
+    totalPages() {
+      return Math.ceil(this.totalProducts / this.itemsPerPage);
+    },
+
+    paginatedProducts() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredProducts.slice(start, end);
+    },
+
+    paginationInfo() {
+      if (this.totalProducts === 0) {
+        return "Không có sản phẩm nào";
+      }
+      const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+      const end = Math.min(
+        this.currentPage * this.itemsPerPage,
+        this.totalProducts
+      );
+      return `Hiển thị ${start}-${end} trong tổng số ${this.totalProducts} sản phẩm`;
+    },
+
+    visiblePageNumbers() {
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
+
+      for (
+        let i = Math.max(2, this.currentPage - delta);
+        i <= Math.min(this.totalPages - 1, this.currentPage + delta);
+        i++
+      ) {
+        range.push(i);
+      }
+
+      if (this.currentPage - delta > 2) {
+        rangeWithDots.push(1, "...");
+      } else {
+        rangeWithDots.push(1);
+      }
+
+      rangeWithDots.push(...range);
+
+      if (this.currentPage + delta < this.totalPages - 1) {
+        rangeWithDots.push("...", this.totalPages);
+      } else if (this.totalPages > 1) {
+        rangeWithDots.push(this.totalPages);
+      }
+
+      return rangeWithDots;
     },
   },
   methods: {
@@ -239,11 +385,17 @@ export default {
       }).format(price);
     },
     // Add Product To Cart
-    addItemToCart(product) {
+    addItemToCart(product, event) {
+      // Prevent multiple clicks
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
       let exists = false;
       let index = 0;
       for (let i = 0; i < this.cart.length; i++) {
-        if (this.cart[i].id === product.id) {
+        if (this.cart[i].productid === product.productid) {
           exists = true;
           index = i;
         }
@@ -251,10 +403,71 @@ export default {
       if (exists) {
         this.cart[index].count++;
       } else {
+        product.count = 1;
         this.cart.push(product);
-        this.setCartToLS();
-        this.$store.commit("totalCart");
       }
+
+      this.setCartToLS();
+      this.$store.commit("totalCart");
+
+      // Save added product for modal display
+      this.addedProduct = product;
+
+      // Show modal manually
+      this.showModal();
+    },
+
+    // Show Modal Function
+    showModal() {
+      this.$nextTick(() => {
+        const modalElement = document.getElementById("cartModal");
+        if (modalElement && window.bootstrap) {
+          const modal = new window.bootstrap.Modal(modalElement);
+          modal.show();
+        }
+      });
+    },
+
+    // Close Modal
+    closeModal() {
+      // Modal sẽ tự đóng bởi data-bs-dismiss="modal"
+    },
+
+    // Pagination methods
+    changePage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+        this.scrollToTop();
+      }
+    },
+
+    goToFirstPage() {
+      this.changePage(1);
+    },
+
+    goToLastPage() {
+      this.changePage(this.totalPages);
+    },
+
+    goToPrevPage() {
+      this.changePage(this.currentPage - 1);
+    },
+
+    goToNextPage() {
+      this.changePage(this.currentPage + 1);
+    },
+
+    changeItemsPerPage(newItemsPerPage) {
+      this.itemsPerPage = newItemsPerPage;
+      this.currentPage = 1; // Reset to first page
+      this.scrollToTop();
+    },
+
+    scrollToTop() {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     },
     setCartToLS() {
       localStorage.setItem("cart", JSON.stringify(this.cart));
@@ -285,7 +498,7 @@ export default {
       }
       product.wishlist = !product.wishlist;
       localStorage.setItem(
-        `${product.name}Wishlist_${product.id}`,
+        `${product.productname}Wishlist_${product.productid}`,
         product.wishlist
       );
     },
@@ -318,7 +531,7 @@ export default {
       }
       product.compare = !product.compare;
       localStorage.setItem(
-        `${product.name}Compare_${product.id}`,
+        `${product.productname}Compare_${product.productid}`,
         product.compare
       );
     },
@@ -334,6 +547,7 @@ export default {
     // Filter methods
     filterByCategory(category) {
       this.filters.categoryId = category.id;
+      this.currentPage = 1; // Reset pagination
       this.applyFilters();
 
       // Cập nhật URL query parameters
@@ -345,27 +559,32 @@ export default {
       });
     },
 
-    applyFilters(filters) {
+    applyFilters(filters, updateUrl = true) {
       if (filters) {
         // Merge the new filters with existing ones
         this.filters = { ...this.filters, ...filters };
       }
 
+      // Reset pagination when filters change
+      this.currentPage = 1;
+
       // Gọi API để lọc sản phẩm
       this.applyServerFilters();
 
-      // Cập nhật URL query parameters
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          minPrice: this.filters.minPrice,
-          maxPrice: this.filters.maxPrice,
-          sortBy: this.filters.sortBy,
-          userNeeds: this.filters.userNeeds.join(","),
-          minRating: this.filters.minRating,
-          categoryId: this.filters.categoryId,
-        },
-      });
+      // Chỉ cập nhật URL khi cần thiết (không phải từ mounted)
+      if (updateUrl) {
+        this.$router.replace({
+          query: {
+            ...this.$route.query,
+            minPrice: this.filters.minPrice,
+            maxPrice: this.filters.maxPrice,
+            sortBy: this.filters.sortBy,
+            userNeeds: this.filters.userNeeds.join(","),
+            minRating: this.filters.minRating,
+            categoryId: this.filters.categoryId,
+          },
+        });
+      }
     },
 
     // Phương thức gọi API lọc sản phẩm
@@ -463,10 +682,10 @@ export default {
       // Get the Active Product Icons
       this.catalogProducts.forEach((product) => {
         const wishlist = localStorage.getItem(
-          `${product.name}Wishlist_${product.id}`
+          `${product.productname}Wishlist_${product.productid}`
         );
         const compare = localStorage.getItem(
-          `${product.name}Compare_${product.id}`
+          `${product.productname}Compare_${product.productid}`
         );
 
         if (wishlist !== null) {
@@ -487,13 +706,13 @@ export default {
       if (query.userNeeds) this.filters.userNeeds = query.userNeeds.split(",");
       if (query.minRating) this.filters.minRating = parseInt(query.minRating);
 
-      // Áp dụng bộ lọc ban đầu nếu có
+      // Áp dụng bộ lọc ban đầu nếu có (không update URL để tránh loop)
       if (
         this.filters.categoryId ||
         this.filters.minPrice !== 0 ||
         this.filters.maxPrice !== 5000
       ) {
-        this.applyFilters();
+        this.applyFilters(null, false);
       }
     } catch (error) {
       console.error("Lỗi khi khởi tạo dữ liệu:", error);
@@ -554,39 +773,108 @@ export default {
 
       .products-section {
         display: flex;
-        gap: 20px;
-        padding: 0 20px;
+        gap: 20px; /* Gap vừa phải giữa products và filter */
+        padding: 0 10px; /* Padding compact hơn */
+        align-items: flex-start;
 
         .products-container {
           flex: 1;
-          max-width: calc(100% - 270px);
+          max-width: calc(100% - 250px);
+          margin-left: -0.5cm; /* Điều chỉnh vị trí phù hợp */
+          padding: 0 5px; /* Giảm padding để compact hơn */
 
           &.grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px; /* Gap vừa phải như trong ảnh */
+            align-items: stretch;
+            justify-items: center;
+
+            @media (max-width: 1400px) {
+              grid-template-columns: repeat(3, 1fr);
+              gap: 14px;
+            }
 
             @media (max-width: 1200px) {
               grid-template-columns: repeat(2, 1fr);
+              gap: 12px;
+              margin-left: -0.3cm;
+            }
+
+            @media (max-width: 991px) {
+              margin-left: -0.2cm;
+              gap: 12px;
             }
 
             @media (max-width: 767px) {
               grid-template-columns: repeat(1, 1fr);
+              gap: 12px;
+              padding: 0 3px;
+              margin-left: 0;
+            }
+
+            @media (max-width: 480px) {
+              gap: 10px;
+              padding: 0;
+              margin-left: 0;
             }
 
             .product {
+              width: 100%;
+              display: flex;
+              justify-content: center;
+              align-items: stretch; /* Đảm bảo tất cả items có cùng chiều cao */
+
               .card {
-                width: 100%;
+                width: 200px; /* Giảm width để compact như ảnh */
                 margin: 0;
-                height: 100%;
-                max-width: 300px;
-                margin: 0 auto;
+                height: 320px; /* Giảm height để giống ảnh */
+                max-width: 200px;
+                min-width: 200px;
+
+                @media (max-width: 1400px) {
+                  width: 190px;
+                  max-width: 190px;
+                  min-width: 190px;
+                }
+
+                @media (max-width: 1200px) {
+                  width: 200px;
+                  max-width: 200px;
+                  min-width: 200px;
+                }
+
+                @media (max-width: 991px) {
+                  width: 180px;
+                  max-width: 180px;
+                  min-width: 180px;
+                }
+
+                @media (max-width: 767px) {
+                  width: 100%;
+                  max-width: 280px;
+                  min-width: 250px;
+                  margin: 0 auto;
+                }
+
+                @media (max-width: 480px) {
+                  width: 100%;
+                  max-width: 100%;
+                  min-width: unset;
+                }
+                display: flex;
+                flex-direction: column;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
 
                 .img-holder {
-                  height: 180px;
+                  height: 160px; /* Giảm height ảnh để compact */
                   width: 100%;
-                  padding: 10px;
+                  padding: 8px;
                   background: #f8f8f8;
+                  flex-shrink: 0;
 
                   .imgs {
                     height: 100%;
@@ -600,62 +888,113 @@ export default {
                       width: 100%;
                       height: 100%;
                       object-fit: contain;
-                      padding: 10px;
+                      padding: 6px;
+                    }
+
+                    .first {
+                      /* Single image - no special styling needed */
+                    }
+
+                    .second {
+                      display: none; /* Ẩn ảnh thứ 2 trong grid */
                     }
                   }
                 }
 
                 .card-body {
                   padding: 10px;
+                  flex: 1;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: space-between;
 
                   .card-text {
-                    font-size: 13px;
-                    height: 32px;
-                    margin: 5px 0;
+                    font-size: 12px;
+                    height: 32px; /* Giảm height cho compact */
+                    margin: 4px 0;
                     overflow: hidden;
                     display: -webkit-box;
                     -webkit-line-clamp: 2;
                     -webkit-box-orient: vertical;
+                    line-height: 1.3;
                   }
 
                   .price {
-                    margin: 8px 0;
-                    font-size: 14px;
+                    margin: 6px 0;
+                    font-size: 13px;
                     display: flex;
                     align-items: center;
                     flex-wrap: wrap;
-                    gap: 8px;
+                    gap: 6px;
+                    min-height: 20px; /* Giảm height để compact */
                   }
 
                   .price-num {
                     text-decoration: line-through;
                     color: grey;
-                    font-size: 13px;
+                    font-size: 12px;
                   }
 
                   .buy {
+                    margin-top: auto;
+
                     .add-product {
-                      padding: 8px;
-                      font-size: 13px;
-                      height: 32px;
+                      padding: 8px 10px;
+                      font-size: 11px;
+                      height: 32px; /* Giảm height nút cho compact */
+                      width: 100%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-weight: 600;
+                      border-radius: 4px;
+                      transition: all 0.3s ease;
                     }
                   }
                 }
 
                 .discount {
                   font-size: 11px;
-                  padding: 2px 6px;
+                  padding: 4px 6px;
                   top: 8px;
                   left: 8px;
+                  border-radius: 4px;
+                  background: #ff4444;
+                  color: white;
+                  font-weight: 500;
                 }
 
                 .product-options {
                   right: 8px;
                   top: 8px;
+                  opacity: 0;
+                  transition: all 0.3s ease;
 
                   > div {
                     margin-bottom: 8px;
                     font-size: 14px;
+                    cursor: pointer;
+
+                    i {
+                      pointer-events: none;
+                    }
+                  }
+                }
+
+                /* Hover effects cho grid - loại bỏ image transition */
+                &:hover {
+                  transform: translateY(-5px);
+                  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+
+                  .product-options {
+                    opacity: 1;
+                  }
+
+                  .buy {
+                    .add-product {
+                      background-color: var(--yellow);
+                      color: white;
+                    }
                   }
                 }
               }
@@ -696,6 +1035,7 @@ export default {
           border-radius: 8px;
           padding: 15px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          margin-left: 1cm;
 
           @media (max-width: 991px) {
             display: none;
@@ -715,14 +1055,18 @@ export default {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 320px; /* Giảm height để compact như ảnh */
+    display: flex;
+    flex-direction: column;
 
     .img-holder {
       position: relative;
       width: 100%;
-      height: 280px;
+      height: 160px; /* Giảm height ảnh đồng nhất */
       overflow: hidden;
       background: #f8f8f8;
       border-radius: 8px 8px 0 0;
+      flex-shrink: 0;
 
       .imgs {
         width: 100%;
@@ -741,13 +1085,11 @@ export default {
         }
 
         .first {
-          opacity: 1;
-          z-index: 1;
+          /* Simplified cho single image */
         }
 
         .second {
-          opacity: 0;
-          z-index: 0;
+          display: none; /* Ẩn hoàn toàn ảnh thứ 2 để tránh lỗi */
         }
       }
     }
@@ -771,106 +1113,60 @@ export default {
     }
 
     .card-body {
-      padding: 15px;
+      padding: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
 
       .card-text {
-        margin: 5px 0;
-        font-size: 15px;
-        height: 40px;
+        margin: 4px 0;
+        font-size: 12px;
+        height: 32px; /* Giảm height cho compact */
         overflow: hidden;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
+        line-height: 1.4;
       }
 
       .price {
-        margin: 8px 0;
-        font-size: 14px;
+        margin: 6px 0;
+        font-size: 13px;
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
+        min-height: 20px;
       }
 
       .price-num {
         text-decoration: line-through;
         color: grey;
-        font-size: 13px;
+        font-size: 12px;
       }
 
       .buy {
+        margin-top: auto;
+
         .add-product {
           color: var(--bg-color);
           border: none;
-          font-weight: 500;
+          font-weight: 600;
           background-color: #e3e3e3;
-          padding: 12px;
-          border-radius: 6px;
-          transition: 0.3s;
+          padding: 8px 10px;
+          font-size: 11px;
+          border-radius: 4px;
+          transition: all 0.3s ease;
           width: 100%;
+          height: 32px;
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
 
           &:hover {
             background-color: var(--yellow);
-          }
-        }
-
-        .modal-content {
-          .modal-header {
-            border-bottom: none;
-            padding: 16px;
-          }
-          .modal-body {
-            padding: 0 16px 16px;
-            .modal-info {
-              h2 {
-                margin-bottom: 20px;
-                font-size: 18px;
-                text-align: center;
-                color: green;
-              }
-            }
-            .modal-buttons {
-              display: flex;
-              justify-content: center;
-              gap: 20px;
-              @media (max-width: 420px) {
-                flex-direction: column;
-              }
-              a {
-                button {
-                  width: 100%;
-                  border: none;
-                  border-radius: 6px;
-                  padding: 12px 0;
-                  font-weight: 500;
-                  letter-spacing: 0.5px;
-                }
-                &.view-cart {
-                  flex: 1;
-                  button {
-                    background-color: #e3e3e3;
-                  }
-                }
-                &.checkout {
-                  flex: 1;
-                  button {
-                    background-color: var(--yellow);
-                  }
-                }
-              }
-            }
-            .continue {
-              margin-top: 15px;
-              button {
-                display: block;
-                margin: auto;
-                border: none;
-                background-color: transparent;
-                text-decoration: underline;
-                font-size: 18px;
-              }
-            }
           }
         }
       }
@@ -886,13 +1182,15 @@ export default {
       border-radius: 4px;
       font-weight: 500;
       z-index: 2;
+      font-size: 11px;
     }
 
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
-      .img-holder {
+      /* Loại bỏ image transition để tránh lỗi */
+      /* .img-holder {
         .imgs {
           .first {
             opacity: 0;
@@ -901,7 +1199,7 @@ export default {
             opacity: 1;
           }
         }
-      }
+      } */
 
       .product-options {
         opacity: 1;
@@ -912,6 +1210,227 @@ export default {
         .add-product {
           background-color: var(--yellow);
         }
+      }
+    }
+  }
+}
+
+/* Modal styling - copied from ProductsSwiper.vue */
+.modal-content {
+  .modal-header {
+    border-bottom: none;
+    padding: 16px;
+  }
+  .modal-body {
+    padding: 0 16px 16px;
+    .modal-info {
+      h2 {
+        margin-bottom: 20px;
+        font-size: 18px;
+        text-align: center;
+        color: green;
+      }
+
+      .product-image-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+
+        img {
+          max-width: 150px;
+          max-height: 150px;
+          object-fit: contain;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      a {
+        button {
+          width: 100%;
+          border: none;
+          border-radius: 6px;
+          padding: 12px 0;
+          font-weight: 500;
+          letter-spacing: 0.5px;
+        }
+        &.view-cart {
+          flex: 1;
+          margin-right: 20px;
+          button {
+            background-color: #e3e3e3;
+          }
+        }
+        &.checkout {
+          flex: 1;
+          button {
+            background-color: var(--yellow);
+          }
+        }
+      }
+    }
+    .continue {
+      margin-top: 15px;
+      button {
+        display: block;
+        margin: auto;
+        border: none;
+        background-color: transparent;
+        text-decoration: underline;
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// Pagination Styling
+.pagination-section {
+  margin-top: 40px;
+  padding: 20px;
+  border-top: 1px solid #e5e5e5;
+
+  .pagination-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #666;
+
+    @media (max-width: 767px) {
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .results-info {
+      font-weight: 500;
+    }
+
+    .items-per-page {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      label {
+        margin: 0;
+        font-weight: 500;
+      }
+
+      .items-select {
+        padding: 4px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+
+        &:focus {
+          outline: none;
+          border-color: var(--yellow);
+        }
+      }
+    }
+  }
+
+  .pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+
+    @media (max-width: 480px) {
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .pagination-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #ddd;
+      background: white;
+      color: #666;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover:not(:disabled) {
+        background: var(--yellow);
+        border-color: var(--yellow);
+        color: white;
+      }
+
+      &:disabled {
+        background: #f5f5f5;
+        color: #ccc;
+        cursor: not-allowed;
+        border-color: #e5e5e5;
+      }
+
+      @media (max-width: 480px) {
+        width: 35px;
+        height: 35px;
+        font-size: 12px;
+      }
+    }
+
+    .pagination-numbers {
+      display: flex;
+      gap: 4px;
+      margin: 0 12px;
+
+      @media (max-width: 480px) {
+        margin: 0 8px;
+      }
+    }
+
+    .pagination-number {
+      min-width: 40px;
+      height: 40px;
+      border: 1px solid #ddd;
+      background: white;
+      color: #666;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      padding: 0 8px;
+
+      &:hover:not(:disabled):not(.dots) {
+        background: var(--yellow);
+        border-color: var(--yellow);
+        color: white;
+      }
+
+      &.active {
+        background: var(--yellow);
+        border-color: var(--yellow);
+        color: white;
+        font-weight: 600;
+      }
+
+      &.dots {
+        border: none;
+        background: transparent;
+        cursor: default;
+        font-weight: bold;
+        color: #999;
+      }
+
+      @media (max-width: 480px) {
+        min-width: 35px;
+        height: 35px;
+        font-size: 14px;
       }
     }
   }

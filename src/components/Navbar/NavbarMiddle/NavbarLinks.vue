@@ -60,15 +60,19 @@
                     this.$router.push({
                       name: 'product',
                       params: {
-                        id: product.id,
-                        description: product.description,
+                        id: product.id || product.productid,
+                        description:
+                          product.description || product.productdescription,
                       },
                     });
                     toggleCart();
                   }
                 "
               >
-                <img :src="product.firstImg" :alt="product.title" />
+                <img
+                  :src="product.firstImg || product.firstimg"
+                  :alt="product.title || product.productname"
+                />
               </a>
             </div>
             <div class="product-text">
@@ -79,23 +83,22 @@
                     this.$router.push({
                       name: 'product',
                       params: {
-                        id: product.id,
-                        description: product.description,
+                        id: product.id || product.productid,
+                        description:
+                          product.description || product.productdescription,
                       },
                     });
                     toggleCart();
                   }
                 "
               >
-                {{ product.description }}
+                {{
+                  product.description || product.productname || product.title
+                }}
               </a>
               <p class="total">
                 {{ product.count }} X
-                {{
-                  `$${Math.floor(
-                    product.price - (product.price * product.discount) / 100
-                  )}.00 `
-                }}
+                {{ formatPrice(getProductPrice(product)) }}
               </p>
             </div>
             <div class="delete">
@@ -170,23 +173,35 @@ export default {
   computed: {
     ...mapState(["cart"]),
     totalPrice() {
-      return `$${this.homeCart
-        .reduce(
-          (total, product) =>
-            total +
-            Math.floor(
-              product.price - (product.price * product.discount) / 100
-            ) *
-              product.count,
-          0
-        )
-        .toFixed(2)}`;
+      const total = this.homeCart.reduce(
+        (sum, product) => sum + this.getProductPrice(product) * product.count,
+        0
+      );
+      return this.formatPrice(total);
     },
     isLoggedIn() {
       return this.$store.state.isLoggedIn;
     },
   },
   methods: {
+    formatPrice(price) {
+      return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(price);
+    },
+    getProductPrice(product) {
+      // Xử lý cả hai cấu trúc dữ liệu: từ API (catalog) và từ Vuex (home)
+      const price = Number(product.price || product.productprice || 0);
+      const discount = Number(product.discount || product.productdiscount || 0);
+
+      if (isNaN(price)) {
+        console.warn("Invalid price for product in navbar:", product);
+        return 0;
+      }
+
+      return Math.floor(price - (price * discount) / 100);
+    },
     handleResize() {
       this.window.width = window.innerWidth;
     },
