@@ -1,12 +1,30 @@
 <template>
   <div class="search-input">
-    <input type="text" placeholder="Search for product.." />
-    <button>Search</button>
+    <input
+      type="text"
+      placeholder="Search for product.."
+      v-model="searchQuery"
+      @keyup.enter="search"
+    />
+    <button @click="search">Search</button>
   </div>
 </template>
 
 <script>
-export default {};
+export default {
+  data() {
+    return {
+      searchQuery: "",
+    };
+  },
+  methods: {
+    search() {
+      if (this.searchQuery.trim()) {
+        this.$router.push({ name: "search", query: { q: this.searchQuery } });
+      }
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

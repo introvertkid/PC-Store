@@ -43,6 +43,15 @@ const routes = [
       title: "Electbox - BLOG",
     },
   },
+  {
+    name: "search",
+    path: "/search",
+    component: () => import("@/views/SearchView.vue"),
+    props: (route) => ({ query: route.query.q }),
+    meta: {
+      title: "Electbox - Search",
+    },
+  },
   // Middle Navbar Icon Components
   {
     name: "cart",
