@@ -34,7 +34,7 @@ export default {
         z-index: 9999 !important;
       }
       #dify-chatbot-bubble-window {
-        width: 24rem !important;
+        width: 30rem !important;
         height: 40rem !important;
         position: fixed !important;
         bottom: 80px !important;
