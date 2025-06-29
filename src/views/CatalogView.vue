@@ -1,4 +1,3 @@
-/catalog2 //catalog
 <!-- eslint-disable prettier/prettier, vue/no-deprecated-destroyed-lifecycle -->
 <template>
   <div class="catalog-container">
