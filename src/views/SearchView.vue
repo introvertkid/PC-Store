@@ -24,11 +24,6 @@
                       class="card-img-top first"
                       alt="Product Image"
                     />
-                    <img
-                      :src="product.secondimg"
-                      class="card-img-top second"
-                      alt="Product Image"
-                    />
                   </div>
                 </div>
                 <div class="card-body">
@@ -405,18 +400,12 @@ export default {
           width: 100%;
           height: 100%;
           object-fit: contain;
-          transition: opacity 0.3s ease;
           padding: 10px;
         }
 
         .first {
           opacity: 1;
           z-index: 1;
-        }
-
-        .second {
-          opacity: 0;
-          z-index: 0;
         }
       }
     }
@@ -489,17 +478,6 @@ export default {
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-      .img-holder {
-        .imgs {
-          .first {
-            opacity: 0;
-          }
-          .second {
-            opacity: 1;
-          }
-        }
-      }
 
       .product-options {
         opacity: 1;
