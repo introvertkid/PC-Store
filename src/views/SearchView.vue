@@ -371,26 +371,65 @@ export default {
 
 // Copied .product styles from CatalogView.vue
 .product {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+
   .card {
-    border: none;
-    position: relative;
-    margin-bottom: 24px;
-    background: #fff;
+    width: 240px;
+    margin: 0;
+    height: 320px;
+    max-width: 240px;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
     border-radius: 8px;
+    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    position: relative;
+
+    @media (max-width: 1400px) {
+      width: 190px;
+      max-width: 190px;
+      min-width: 190px;
+    }
+    @media (max-width: 1200px) {
+      width: 200px;
+      max-width: 200px;
+      min-width: 200px;
+    }
+    @media (max-width: 991px) {
+      width: 180px;
+      max-width: 180px;
+      min-width: 180px;
+    }
+    @media (max-width: 767px) {
+      width: 100%;
+      max-width: 280px;
+      min-width: 250px;
+      margin: 0 auto;
+    }
+    @media (max-width: 480px) {
+      width: 100%;
+      max-width: 100%;
+      min-width: unset;
+    }
 
     .img-holder {
-      position: relative;
+      height: 160px;
       width: 100%;
-      height: 280px;
-      overflow: hidden;
+      padding: 8px;
       background: #f8f8f8;
-      border-radius: 8px 8px 0 0;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
 
       .imgs {
-        width: 100%;
         height: 100%;
+        width: 100%;
         position: relative;
 
         img {
@@ -400,28 +439,24 @@ export default {
           width: 100%;
           height: 100%;
           object-fit: contain;
-          padding: 10px;
-        }
-
-        .first {
-          opacity: 1;
-          z-index: 1;
+          padding: 6px;
         }
       }
     }
 
     .product-options {
       position: absolute;
-      right: 0;
-      top: 5%;
+      right: 8px;
+      top: 8px;
       opacity: 0;
-      transition: 0.3s;
+      transition: all 0.3s ease;
       z-index: 2;
+
       > div {
-        margin-bottom: 12px;
-        font-size: 17px;
-        color: #2230409e;
+        margin-bottom: 8px;
+        font-size: 14px;
         cursor: pointer;
+        color: #2230409e;
         i {
           pointer-events: none;
         }
@@ -429,43 +464,56 @@ export default {
     }
 
     .card-body {
-      padding: 15px;
+      padding: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
 
       .card-text {
-        margin: 5px 0;
-        font-size: 15px;
-        height: 40px;
+        font-size: 12px;
+        height: 32px;
+        margin: 4px 0;
         overflow: hidden;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
+        line-height: 1.3;
       }
 
       .price {
-        margin: 8px 0;
-        font-size: 14px;
+        margin: 6px 0;
+        font-size: 13px;
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
+        min-height: 20px;
       }
 
       .price-num {
         text-decoration: line-through;
         color: grey;
-        font-size: 13px;
+        font-size: 12px;
       }
 
       .buy {
+        margin-top: auto;
+
         .add-product {
+          padding: 8px 10px;
+          font-size: 11px;
+          height: 32px;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          border-radius: 4px;
+          transition: all 0.3s ease;
           color: var(--bg-color);
           border: none;
-          font-weight: 500;
           background-color: #e3e3e3;
-          padding: 12px;
-          border-radius: 6px;
-          transition: 0.3s;
-          width: 100%;
           cursor: pointer;
 
           &:hover {
@@ -476,18 +524,16 @@ export default {
     }
 
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 
       .product-options {
         opacity: 1;
-        right: 5%;
       }
 
-      .buy {
-        .add-product {
-          background-color: var(--yellow);
-        }
+      .buy .add-product {
+        background-color: var(--yellow);
+        color: white;
       }
     }
   }
