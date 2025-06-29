@@ -8,12 +8,12 @@ on:
 
 jobs:
   build:
-
-    runs-on: [ubuntu-latest, windows-lastes]
-
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-lastest]
         node-version: [20.x, 22.x]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout repository
