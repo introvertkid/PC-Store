@@ -13,7 +13,7 @@ export const elasticSearch = async (req, res) => {
                 query: {
                     multi_match: {
                         query: query,
-                        fields: ["name^2", "description"],
+                        fields: ["productname^2", "productdescription"],
                         fuzziness: "AUTO" // Thêm fuzziness để tìm kiếm gần đúng
                     }
                 }
@@ -37,15 +37,36 @@ export const elasticSearch = async (req, res) => {
             body: {
                 mappings: {
                     properties: {
-                        name: { type: "text" },
-                        description: { type: "text" },
-                        price: { type: "float" }
+                        productid: { type: "keyword" },
+                        productname: { type: "text" },
+                        productdescription: { type: "text" },
+                        price: { type: "float" },
+                        firstimg: { type: "text" },
+                        secondimg: { type: "text" }
                     }
                 }
             }
         });
 
-        const query = "SELECT productID as id, productName as name, productDescription as description, price FROM products";
+        const query = `
+            WITH ProductImages AS (
+                SELECT
+                    productID,
+                    ROW_NUMBER() OVER (PARTITION BY productID ORDER BY imageID) as rn,
+                    imageURL
+                FROM product_images
+            )
+            SELECT 
+                p.productID as id,
+                p.productName as name,
+                p.productDescription as description,
+                p.price,
+                pi1.imageURL as firstimg,
+                pi2.imageURL as secondimg
+            FROM products p
+            LEFT JOIN ProductImages pi1 ON p.productID = pi1.productID AND pi1.rn = 1
+            LEFT JOIN ProductImages pi2 ON p.productID = pi2.productID AND pi2.rn = 2
+        `;
         const result = await db.query(query);
 
         console.log(`There are ${result.rowCount} products in result`);
@@ -59,9 +80,12 @@ export const elasticSearch = async (req, res) => {
         const bulkOps = result.rows.flatMap((doc) => [
             { index: { _index: "products", _id: String(doc.id) } },
             {
-                name: doc.name,
-                description: doc.description,
-                price: doc.price
+                productid: doc.id,
+                productname: doc.name,
+                productdescription: doc.description,
+                price: doc.price,
+                firstimg: doc.firstimg,
+                secondimg: doc.secondimg
             }
         ]);
 
