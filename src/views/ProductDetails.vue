@@ -1,46 +1,76 @@
 <template>
   <div class="product-details">
-    <h2 class="item-header">
-      <router-link to="/catalog">Products</router-link> |
-      {{ myProduct[0].description }}
-    </h2>
-    <div class="item" v-for="product in myProduct" :key="product.id">
+    <div class="header-section">
+      <h2 class="item-header">
+        <router-link to="/catalog">Products</router-link>
+      </h2>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="isLoading" class="loading-state">
+      <p>Đang tải thông tin sản phẩm...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+      <router-link to="/catalog" class="back-to-catalog"
+        >← Quay lại danh sách sản phẩm</router-link
+      >
+    </div>
+
+    <!-- Product Content -->
+    <div class="item" v-else-if="myProduct.id">
       <div id="img-item" class="item-img">
-        <img id="img-1" :src="product.firstImg" alt="" />
+        <img id="img-1" :src="myProduct.firstImg" :alt="myProduct.title" />
       </div>
       <div class="item-details">
-        <h4 class="item-name">{{ product.description }}</h4>
-        <span v-if="product.stars === 5" style="color: var(--yellow)">
-          <i v-for="e in 5" :key="e" class="fa-solid fa-star"></i>
-        </span>
-        <span v-else style="color: var(--yellow)">
-          <i v-for="e in 4" :key="e" class="fa-solid fa-star"></i>
-          <i class="fa-solid fa-star" style="color: grey"></i>
-        </span>
+        <h4 class="item-name">{{ myProduct.title }}</h4>
+        <div class="rating-info">
+          <span style="color: var(--yellow)">
+            <i
+              v-for="star in 5"
+              :key="star"
+              :class="
+                star <= myProduct.stars
+                  ? 'fa-solid fa-star'
+                  : 'fa-regular fa-star'
+              "
+            ></i>
+          </span>
+          <span class="rating-text">
+            ({{
+              myProduct.avgRating ? myProduct.avgRating.toFixed(1) : "0.0"
+            }}
+            / 5.0) - {{ myProduct.reviewCount || 0 }} đánh giá
+            {{ myProduct.totalSold ? ` - Đã bán: ${myProduct.totalSold}` : "" }}
+          </span>
+        </div>
         <div class="price">
           <span style="font-weight: bold">
-            {{ formatDiscountedPrice(product) }}
+            {{ formatDiscountedPrice(myProduct) }}
           </span>
-          <span class="price-num"> {{ formatOriginalPrice(product) }}</span>
+          <span class="price-num"> {{ formatOriginalPrice(myProduct) }}</span>
         </div>
         <p class="description">
-          Elegant and comfy, this embroidered A-line dress which has a round
-          neck, and three-quarter sleeves is all you need to ensure your
-          wardrobe is up...
+          {{ myProduct.description || "Không có mô tả cho sản phẩm này." }}
         </p>
         <ul class="model">
-          <li><span>Type</span> : Car</li>
-          <li><span>Vendor</span> : Dell</li>
-          <li><span>Sku</span> : NHFL5-14</li>
+          <li><span>Category</span> : {{ myProduct.categoryName || "N/A" }}</li>
+          <li><span>Vendor</span> : {{ myProduct.productVendor || "N/A" }}</li>
+          <li><span>SKU</span> : {{ myProduct.productSku || "N/A" }}</li>
           <li style="color: #3ed660">
-            <span style="color: #223040 !important">Availability</span> : In
-            Stock
+            <span style="color: #223040 !important">Availability</span> :
+            {{ myProduct.quantityInStock > 0 ? "In Stock" : "Out of Stock" }}
+            {{
+              myProduct.quantityInStock
+                ? `(${myProduct.quantityInStock} available)`
+                : ""
+            }}
           </li>
           <li>
-            <span>Tags</span> :
-            <div>Accessories, Cotton , Fashion , Summer , Vintage</div>
+            <span>Total Sold</span> : {{ myProduct.totalSold || 0 }} units
           </li>
-          <li><span>Colors </span> : Black</li>
         </ul>
         <div class="colors">
           <span class="blue"> </span>
@@ -53,14 +83,14 @@
             <button
               @click="
                 {
-                  product.count > 1 ? product.count-- : true;
+                  myProduct.count > 1 ? myProduct.count-- : true;
                 }
               "
             >
               <i class="fa-solid fa-minus"></i>
             </button>
-            <input type="number" v-model="product.count" />
-            <button @click="product.count++">
+            <input type="number" v-model="myProduct.count" />
+            <button @click="myProduct.count++">
               <i class="fa-solid fa-plus"></i>
             </button>
           </div>
@@ -76,11 +106,11 @@
           >
             Total
           </span>
-          : {{ formatTotalPrice(product) }}
+          : {{ formatTotalPrice(myProduct) }}
         </div>
         <div class="buy">
           <button
-            @click="addItemToCart(product)"
+            @click="addItemToCart(myProduct)"
             type="button"
             class="add-product"
             data-bs-toggle="modal"
@@ -113,7 +143,7 @@
                       <i class="fa-regular fa-circle-check"></i>
                     </h2>
                     <div class="modal-img">
-                      <img :src="product.firstImg" :alt="product.title" />
+                      <img :src="myProduct.firstImg" :alt="myProduct.title" />
                     </div>
                   </div>
                   <div class="modal-buttons">
@@ -142,24 +172,24 @@
           <router-link class="checkout" to="/checkout"> CHECKOUT </router-link>
         </div>
         <div class="product-options">
-          <div class="fav" @click="toggleFavourite(product)">
-            <i v-if="!product.wishlist" class="fa-regular fa-heart"
+          <div class="fav" @click="toggleFavourite(myProduct)">
+            <i v-if="!myProduct.wishlist" class="fa-regular fa-heart"
               ><span>Add to Wishlist</span></i
             >
-            <i v-if="product.wishlist" class="fa-solid fa-heart"
+            <i v-if="myProduct.wishlist" class="fa-solid fa-heart"
               ><span>Add to Wishlist</span></i
             >
           </div>
-          <div class="compare" @click="toggleCompare(product)">
+          <div class="compare" @click="toggleCompare(myProduct)">
             <i
-              v-if="product.compare"
+              v-if="myProduct.compare"
               class="fa-solid fa-check"
               style="pointer-events: none"
             >
               <span style="pointer-events: none">Add to Compare</span></i
             >
             <i
-              v-if="!product.compare"
+              v-if="!myProduct.compare"
               class="fa-solid fa-arrows-rotate"
               style="pointer-events: none"
             >
@@ -338,6 +368,7 @@
 <script>
 import ProductSwiper from "@/components/Home/ProductsSwiper.vue";
 import { formatPrice } from "@/utils/currency.js";
+import axios from "axios";
 
 import { mapState, mapMutations } from "vuex";
 
@@ -345,8 +376,10 @@ export default {
   data() {
     return {
       detailsActive: true,
-      myProduct: [],
+      myProduct: {},
       selectedDiv: 1,
+      isLoading: false,
+      error: null,
     };
   },
   computed: {
@@ -371,10 +404,46 @@ export default {
   methods: {
     ...mapMutations(["getPopularProducts"]),
 
-    getMyProduct() {
-      this.myProduct = this.allProducts.filter(
-        (e) => e.id == this.$route.params.id
-      );
+    async getMyProduct() {
+      try {
+        this.isLoading = true;
+        this.error = null;
+
+        const productId = this.$route.params.id;
+        const response = await axios.get(
+          `http://localhost:3000/api/products/${productId}`
+        );
+
+        this.myProduct = response.data;
+
+        // Set wishlist and compare status from localStorage
+        const wishlistKey = `${this.myProduct.title}Wishlist_${this.myProduct.productid}`;
+        const compareKey = `${this.myProduct.title}Compare_${this.myProduct.productid}`;
+
+        this.myProduct.wishlist = localStorage.getItem(wishlistKey) === "true";
+        this.myProduct.compare = localStorage.getItem(compareKey) === "true";
+
+        // Initialize zooming after data is loaded
+        this.$nextTick(() => {
+          this.zooming();
+        });
+      } catch (error) {
+        console.error("Error loading product details:", error);
+        this.error = "Không thể tải thông tin sản phẩm";
+
+        // Fallback to Vuex store data
+        this.myProduct =
+          this.allProducts.find((e) => e.id == this.$route.params.id) || {};
+
+        // Initialize zooming for fallback data too
+        if (this.myProduct.id) {
+          this.$nextTick(() => {
+            this.zooming();
+          });
+        }
+      } finally {
+        this.isLoading = false;
+      }
     },
     formatDiscountedPrice(product) {
       const price = parseFloat(product.price) || 0;
@@ -395,21 +464,42 @@ export default {
     },
     // Zooming On Product Image
     zooming() {
-      const imgParent = document.getElementById("img-item");
+      this.$nextTick(() => {
+        const imgParent = document.getElementById("img-item");
+        const myImg = document.querySelector("#img-1");
+
+        if (!imgParent || !myImg) {
+          return; // Exit if elements don't exist
+        }
+
+        // Remove existing event listeners if any
+        imgParent.removeEventListener("mousemove", this.onZoom);
+        imgParent.removeEventListener("mouseover", this.onZoom);
+        imgParent.removeEventListener("mouseleave", this.offZoom);
+
+        // Add new event listeners
+        imgParent.addEventListener("mousemove", this.onZoom);
+        imgParent.addEventListener("mouseover", this.onZoom);
+        imgParent.addEventListener("mouseleave", this.offZoom);
+      });
+    },
+
+    onZoom(e) {
       const myImg = document.querySelector("#img-1");
-      imgParent.addEventListener("mousemove", onZoom);
-      imgParent.addEventListener("mouseover", onZoom);
-      imgParent.addEventListener("mouseleave", offZoom);
-      function onZoom(e) {
-        const x = e.clientX - e.target.offsetLeft;
-        const y = e.clientY - e.target.offsetTop;
-        myImg.style.transformOrigin = `${x}px ${y}px`;
-        myImg.style.transform = "scale(2)";
-      }
-      function offZoom() {
-        myImg.style.transformOrigin = `center center`;
-        myImg.style.transform = "scale(1)";
-      }
+      if (!myImg) return;
+
+      const x = e.clientX - e.target.offsetLeft;
+      const y = e.clientY - e.target.offsetTop;
+      myImg.style.transformOrigin = `${x}px ${y}px`;
+      myImg.style.transform = "scale(2)";
+    },
+
+    offZoom() {
+      const myImg = document.querySelector("#img-1");
+      if (!myImg) return;
+
+      myImg.style.transformOrigin = `center center`;
+      myImg.style.transform = "scale(1)";
     },
     // Add Product To Cart
     addItemToCart(product) {
@@ -517,7 +607,7 @@ export default {
   },
   mounted() {
     this.$store.commit("getPopularProducts");
-    this.zooming();
+    // Zooming() is now called after data loads in getMyProduct()
     // Check and set Cart
     this.checkCartLS();
     this.setCartToLS();
@@ -527,8 +617,7 @@ export default {
     // Check and Set Compare
     this.checkCompareLS();
     this.setCompareToLS();
-    // Product Wishtlist and Compare Active Icons
-    this.productIcons();
+    // Product wishlist and compare icons are set in getMyProduct() after data loads
   },
 };
 </script>
@@ -546,15 +635,24 @@ export default {
       padding: 30px 0;
     }
   }
-  > h2 {
-    font-size: 20px;
-    margin-bottom: 40px;
-    font-weight: 400;
-    a {
-      color: var(--bg-color);
-      font-weight: 500;
-      &:hover {
-        color: var(--yellow);
+  .header-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+
+    h2 {
+      font-size: 20px;
+      margin: 0;
+      font-weight: 400;
+
+      a {
+        color: var(--bg-color);
+        font-weight: 500;
+        text-decoration: none;
+
+        &:hover {
+          color: var(--yellow);
+        }
       }
     }
   }
@@ -567,10 +665,17 @@ export default {
       flex: 1;
       max-height: 427px;
       background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
       img {
         max-width: 100%;
         max-height: 100%;
-        overflow: hidden;
+        object-fit: contain;
+        border-radius: 4px;
       }
     }
     .item-details {
@@ -954,5 +1059,45 @@ export default {
       max-width: 100%;
     }
   }
+}
+
+// Loading and Error States
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 60px 20px;
+
+  p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .back-to-catalog {
+    color: var(--yellow);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      color: var(--bg-color);
+    }
+  }
+}
+
+.rating-info {
+  margin-bottom: 10px;
+
+  .rating-text {
+    margin-left: 10px;
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+/* Dịch các phần content lên trên 1cm */
+.loading-state,
+.error-state,
+.item {
+  margin-top: -1cm;
 }
 </style>

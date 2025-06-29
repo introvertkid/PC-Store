@@ -4,18 +4,18 @@ import db from '../database/dbConnection.js';
 export const getAllProducts = async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT p.*, 
+            SELECT p.*,
                    pi.imageurl as firstimg,
-                   (SELECT pi2.imageurl 
-                    FROM product_images pi2 
-                    WHERE pi2.productid = p.productid 
-                    AND pi2.imageid > pi.imageid 
+                   (SELECT pi2.imageurl
+                    FROM product_images pi2
+                    WHERE pi2.productid = p.productid
+                    AND pi2.imageid > pi.imageid
                     LIMIT 1) as secondimg
             FROM products p
             LEFT JOIN product_images pi ON p.productid = pi.productid
             WHERE pi.isthumbnail = true
         `);
-        
+
         // Transform data để phù hợp với frontend
         const transformedProducts = result.rows.map(product => ({
             id: product.productid,
@@ -32,7 +32,7 @@ export const getAllProducts = async (req, res) => {
             compare: false,
             name: "all"
         }));
-        
+
         res.status(200).json(transformedProducts);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -45,12 +45,12 @@ export const filterProductsByPrice = async (req, res) => {
         const { minPrice = 0, maxPrice = 5000 } = req.query;
 
         const result = await db.query(`
-            SELECT p.*, 
+            SELECT p.*,
                    pi.imageurl as firstimg,
-                   (SELECT pi2.imageurl 
-                    FROM product_images pi2 
-                    WHERE pi2.productid = p.productid 
-                    AND pi2.imageid > pi.imageid 
+                   (SELECT pi2.imageurl
+                    FROM product_images pi2
+                    WHERE pi2.productid = p.productid
+                    AND pi2.imageid > pi.imageid
                     LIMIT 1) as secondimg
             FROM products p
             LEFT JOIN product_images pi ON p.productid = pi.productid
@@ -58,16 +58,24 @@ export const filterProductsByPrice = async (req, res) => {
             AND p.price >= $1 AND p.price <= $2
         `, [minPrice, maxPrice]);
 
-        // Tính giá sau khi giảm giá
-        const processedProducts = result.rows.map(product => {
-            const discountedPrice = product.price - (product.price * product.discount / 100);
-            return {
-                ...product,
-                actualPrice: discountedPrice
-            };
-        });
+        // Transform data để phù hợp với frontend
+        const transformedProducts = result.rows.map(product => ({
+            id: product.productid,
+            productid: product.productid, // Để backward compatibility
+            firstImg: product.firstimg,
+            secondImg: product.secondimg || product.firstimg,
+            title: product.productname,
+            price: parseFloat(product.price),
+            discount: Math.floor(Math.random() * 30) + 5,
+            stars: Math.floor(Math.random() * 2) + 4,
+            description: product.productdescription || product.productname,
+            count: 1,
+            wishlist: false,
+            compare: false,
+            name: "filtered"
+        }));
 
-        res.status(200).json(processedProducts);
+        res.status(200).json(transformedProducts);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -87,13 +95,13 @@ export const advancedFilterProducts = async (req, res) => {
 
         // Xây dựng câu query cơ bản
         let query = `
-            SELECT p.*, 
+            SELECT p.*,
                    c.categoryname,
                    pi.imageurl as firstimg,
-                   (SELECT pi2.imageurl 
-                    FROM product_images pi2 
-                    WHERE pi2.productid = p.productid 
-                    AND pi2.imageid > pi.imageid 
+                   (SELECT pi2.imageurl
+                    FROM product_images pi2
+                    WHERE pi2.productid = p.productid
+                    AND pi2.imageid > pi.imageid
                     LIMIT 1) as secondimg
             FROM products p
             LEFT JOIN product_category pc ON p.productid = pc.productid
@@ -134,32 +142,60 @@ export const advancedFilterProducts = async (req, res) => {
                 query += ' ORDER BY p.price DESC';
                 break;
             case 'new':
+                // Sắp xếp theo productID giảm dần (ID cao = sản phẩm mới hơn)
                 query += ' ORDER BY p.productid DESC';
                 break;
-            default: // popular
-                query += ' ORDER BY p.discount DESC';
+            case 'popular':
+            default: 
+                // Sắp xếp theo độ phổ biến: dựa trên số lượng bán
+                query = query.replace(
+                    'SELECT p.*,',
+                    `SELECT p.*,
+                     COALESCE(sales.total_sold, 0) as total_sold,`
+                );
+                
+                query = query.replace(
+                    'FROM products p',
+                    `FROM products p
+                     LEFT JOIN (
+                         SELECT productid, SUM(quantityordered) as total_sold
+                         FROM order_items
+                         GROUP BY productid
+                     ) sales ON p.productid = sales.productid`
+                );
+                
+                query += ' ORDER BY total_sold DESC, p.productid DESC';
                 break;
         }
 
         const result = await db.query(query, params);
 
-        // Tính giá sau giảm giá
-        const processedProducts = result.rows.map(product => {
-            const discountedPrice = product.price - (product.price * product.discount / 100);
-            return {
-                ...product,
-                actualPrice: discountedPrice
-            };
-        });
+        // Transform data để phù hợp với frontend
+        const transformedProducts = result.rows.map(product => ({
+            id: product.productid,
+            productid: product.productid, // Để backward compatibility
+            firstImg: product.firstimg,
+            secondImg: product.secondimg || product.firstimg,
+            title: product.productname,
+            price: parseFloat(product.price),
+            discount: Math.floor(Math.random() * 30) + 5,
+            stars: Math.floor(Math.random() * 2) + 4,
+            description: product.productdescription || product.productname,
+            count: 1,
+            wishlist: false,
+            compare: false,
+            name: "filtered",
+            categoryName: product.categoryname
+        }));
 
-        res.status(200).json(processedProducts);
+        res.status(200).json(transformedProducts);
     } catch (error) {
         console.error('Error in advancedFilterProducts:', error);
         res.status(500).json({ message: error.message });
     }
 };
 
-// Lấy sản phẩm phổ biến (random)
+// Lấy sản phẩm phổ biến (dựa trên số lượng bán)
 export const getPopularProducts = async (req, res) => {
     try {
         const { limit = 8 } = req.query;
@@ -171,11 +207,17 @@ export const getPopularProducts = async (req, res) => {
                     FROM product_images pi2 
                     WHERE pi2.productid = p.productid 
                     AND pi2.imageid > pi.imageid 
-                    LIMIT 1) as secondimg
+                    LIMIT 1) as secondimg,
+                   COALESCE(sales.total_sold, 0) as total_sold
             FROM products p
             LEFT JOIN product_images pi ON p.productid = pi.productid
+            LEFT JOIN (
+                SELECT productid, SUM(quantityordered) as total_sold
+                FROM order_items
+                GROUP BY productid
+            ) sales ON p.productid = sales.productid
             WHERE pi.isthumbnail = true
-            ORDER BY RANDOM()
+            ORDER BY total_sold DESC, p.productid DESC
             LIMIT $1
         `, [limit]);
 
@@ -203,7 +245,7 @@ export const getPopularProducts = async (req, res) => {
     }
 };
 
-// Lấy sản phẩm mới nhất (random)
+// Lấy sản phẩm mới nhất (dựa trên productID - ID cao = mới hơn)
 export const getLatestProducts = async (req, res) => {
     try {
         const { limit = 8 } = req.query;
@@ -219,7 +261,7 @@ export const getLatestProducts = async (req, res) => {
             FROM products p
             LEFT JOIN product_images pi ON p.productid = pi.productid
             WHERE pi.isthumbnail = true
-            ORDER BY RANDOM()
+            ORDER BY p.productid DESC
             LIMIT $1
         `, [limit]);
 
@@ -247,7 +289,7 @@ export const getLatestProducts = async (req, res) => {
     }
 };
 
-// Lấy sản phẩm nổi bật (random)
+// Lấy sản phẩm nổi bật (kết hợp popularity và latest)
 export const getFeaturedProducts = async (req, res) => {
     try {
         const { limit = 8 } = req.query;
@@ -259,11 +301,18 @@ export const getFeaturedProducts = async (req, res) => {
                     FROM product_images pi2 
                     WHERE pi2.productid = p.productid 
                     AND pi2.imageid > pi.imageid 
-                    LIMIT 1) as secondimg
+                    LIMIT 1) as secondimg,
+                   COALESCE(sales.total_sold, 0) as total_sold,
+                   (COALESCE(sales.total_sold, 0) * 0.7 + (p.productid / 1000.0) * 0.3) as featured_score
             FROM products p
             LEFT JOIN product_images pi ON p.productid = pi.productid
+            LEFT JOIN (
+                SELECT productid, SUM(quantityordered) as total_sold
+                FROM order_items
+                GROUP BY productid
+            ) sales ON p.productid = sales.productid
             WHERE pi.isthumbnail = true
-            ORDER BY RANDOM()
+            ORDER BY featured_score DESC, p.productid DESC
             LIMIT $1
         `, [limit]);
 
@@ -287,6 +336,70 @@ export const getFeaturedProducts = async (req, res) => {
         res.status(200).json(transformedProducts);
     } catch (error) {
         console.error('Error in getFeaturedProducts:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Lấy chi tiết sản phẩm theo ID
+export const getProductById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const result = await db.query(`
+            SELECT p.*, 
+                   pi.imageurl as firstimg,
+                   (SELECT pi2.imageurl 
+                    FROM product_images pi2 
+                    WHERE pi2.productid = p.productid 
+                    AND pi2.imageid > pi.imageid 
+                    LIMIT 1) as secondimg,
+                   COALESCE(sales.total_sold, 0) as total_sold,
+                   c.categoryname
+            FROM products p
+            LEFT JOIN product_images pi ON p.productid = pi.productid
+            LEFT JOIN (
+                SELECT productid, SUM(quantityordered) as total_sold
+                FROM order_items
+                GROUP BY productid
+            ) sales ON p.productid = sales.productid
+            LEFT JOIN product_category pc ON p.productid = pc.productid
+            LEFT JOIN categories c ON pc.categoryid = c.categoryid
+            WHERE pi.isthumbnail = true
+            AND p.productid = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Transform data để phù hợp với frontend
+        const product = result.rows[0];
+        const transformedProduct = {
+            id: product.productid,
+            productid: product.productid,
+            firstImg: product.firstimg,
+            secondImg: product.secondimg || product.firstimg,
+            title: product.productname,
+            price: parseFloat(product.price),
+            discount: Math.floor(Math.random() * 30) + 5, // Có thể thay bằng discount thực từ DB
+            stars: 4, // Default rating since no reviews table link
+            description: product.productdescription || product.productname,
+            count: 1,
+            wishlist: false,
+            compare: false,
+            name: "product-detail",
+            categoryName: product.categoryname,
+            totalSold: product.total_sold,
+            avgRating: 0, // No reviews data available
+            reviewCount: 0,
+            quantityInStock: product.quantityinstock,
+            productSku: product.productsku,
+            productVendor: product.productvendor
+        };
+
+        res.status(200).json(transformedProduct);
+    } catch (error) {
+        console.error('Error in getProductById:', error);
         res.status(500).json({ message: error.message });
     }
 };
