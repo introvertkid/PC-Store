@@ -3,29 +3,33 @@
     <h3>Shipping Method</h3>
     <div class="shipping-options">
       <div class="shipping-option">
-        <input
-          type="radio"
-          id="standard"
-          value="standard"
-          v-model="selectedMethod"
-        />
-        <label for="standard">
-          <span class="name">Standard Shipping</span>
-          <span class="price">${{ standardPrice.toFixed(2) }}</span>
-          <span class="time">(3-7 business days)</span>
+        <label>
+          <input
+            type="radio"
+            name="shipping"
+            value="standard"
+            v-model="selectedMethod"
+            @change="updateShippingMethod"
+          />
+          <span class="shipping-info">
+            <span class="name">Standard Shipping (5-7 business days)</span>
+            <span class="price">{{ formatPrice(standardPrice) }}</span>
+          </span>
         </label>
       </div>
       <div class="shipping-option">
-        <input
-          type="radio"
-          id="express"
-          value="express"
-          v-model="selectedMethod"
-        />
-        <label for="express">
-          <span class="name">Express Shipping</span>
-          <span class="price">${{ expressPrice.toFixed(2) }}</span>
-          <span class="time">(1-3 business days)</span>
+        <label>
+          <input
+            type="radio"
+            name="shipping"
+            value="express"
+            v-model="selectedMethod"
+            @change="updateShippingMethod"
+          />
+          <span class="shipping-info">
+            <span class="name">Express Shipping (2-3 business days)</span>
+            <span class="price">{{ formatPrice(expressPrice) }}</span>
+          </span>
         </label>
       </div>
     </div>
@@ -33,6 +37,8 @@
 </template>
 
 <script>
+import { formatPrice } from "@/utils/currency.js";
+
 export default {
   name: "ShippingForm",
 
@@ -60,6 +66,19 @@ export default {
       method: this.selectedMethod,
       price: this.standardPrice,
     });
+  },
+
+  methods: {
+    formatPrice,
+    updateShippingMethod() {
+      this.$emit("method-change", {
+        method: this.selectedMethod,
+        price:
+          this.selectedMethod === "standard"
+            ? this.standardPrice
+            : this.expressPrice,
+      });
+    },
   },
 };
 </script>

@@ -3,7 +3,7 @@
     <div class="container">
       <div class="subscribe">
         <h4>Get Our Latest Update!</h4>
-        <p>Join Our Newsletter And Get $10 Discount</p>
+        <p>Join Our Newsletter And Get 100,000₫ Discount</p>
         <div class="form-floating">
           <input class="form-control" type="email" placeholder=" " />
           <label>Email</label>

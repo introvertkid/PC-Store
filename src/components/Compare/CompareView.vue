@@ -15,16 +15,16 @@
               this.$router.push({
                 name: 'product',
                 params: {
-                  id: compare.id,
-                  description: compare.description,
+                  id: compare.id || compare.productid,
+                  description: getProductName(compare),
                 },
               })
             "
           >
             <img
-              :src="compare.firstImg"
+              :src="getProductImage(compare)"
               class="card-img-top"
-              :alt="compare.title"
+              :alt="getProductName(compare)"
             />
           </div>
           <div class="card-body">
@@ -35,22 +35,19 @@
                   this.$router.push({
                     name: 'product',
                     params: {
-                      id: compare.id,
-                      description: compare.description,
+                      id: compare.id || compare.productid,
+                      description: getProductName(compare),
                     },
                   })
                 "
                 class="card-text"
               >
-                {{ compare.description }}
+                {{ getProductName(compare) }}
               </p>
               <span class="after-discount">{{
-                `$${(
-                  compare.price -
-                  (compare.price * compare.discount) / 100
-                ).toFixed(2)}`
+                formatDiscountedPrice(compare)
               }}</span>
-              <span class="real-price">{{ `$${compare.price}` }}</span>
+              <span class="real-price">{{ formatOriginalPrice(compare) }}</span>
             </div>
             <div class="list">
               <ul>
@@ -107,12 +104,48 @@
 
 <script>
 import { mapState } from "vuex";
+import { formatPrice } from "@/utils/currency.js";
 import $ from "jquery";
 export default {
   computed: {
     ...mapState(["compare", "cart"]),
   },
   methods: {
+    // Compatibility methods for different data structures
+    getProductName(product) {
+      return (
+        product.title ||
+        product.productname ||
+        product.description ||
+        product.name ||
+        "Unknown Product"
+      );
+    },
+    getProductImage(product) {
+      return (
+        product.firstImg ||
+        product.firstimg ||
+        "/assets/Products/products-1.png"
+      );
+    },
+    getProductPrice(product) {
+      const price = parseFloat(product.price) || 0;
+      return isNaN(price) ? 0 : price;
+    },
+    getProductDiscount(product) {
+      const discount = parseFloat(product.discount) || 0;
+      return isNaN(discount) ? 0 : discount;
+    },
+    formatDiscountedPrice(product) {
+      const price = this.getProductPrice(product);
+      const discount = this.getProductDiscount(product);
+      const discountedPrice = (price - (price * discount) / 100).toFixed(2);
+      return formatPrice(discountedPrice);
+    },
+    formatOriginalPrice(product) {
+      const price = this.getProductPrice(product);
+      return formatPrice(price);
+    },
     setCartToLS() {
       localStorage.setItem("cart", JSON.stringify(this.cart));
     },
@@ -131,7 +164,9 @@ export default {
       this.$store.commit("totalCompare");
       product.compare = false;
       localStorage.setItem(
-        `${product.name}Compare_${product.id}`,
+        `${this.getProductName(product)}Compare_${
+          product.id || product.productid
+        }`,
         product.compare
       );
     },

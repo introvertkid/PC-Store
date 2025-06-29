@@ -9,30 +9,42 @@
         <div class="fourth">TOTAL</div>
       </div>
       <div class="products">
-        <div class="item" v-for="(product, i) in cart" :key="product.id">
+        <div
+          class="item"
+          v-for="(product, i) in cart"
+          :key="product.productid || product.id"
+        >
           <div class="one">
             <div class="img">
-              <img :src="product.firstImg" :alt="product.title" />
+              <img
+                :src="product.firstimg || product.firstImg"
+                :alt="product.productname || product.title"
+              />
             </div>
             <div class="text">
               <router-link
                 :to="{
                   name: 'product',
                   params: {
-                    id: product.id,
-                    description: product.description,
+                    id: product.productid || product.id,
+                    description:
+                      product.productdescription || product.description,
                   },
                 }"
-                >{{ product.title }}</router-link
+                >{{ product.productname || product.title }}</router-link
               >
-              <p>{{ product.description }}</p>
+              <p>
+                {{
+                  product.productdescription ||
+                  product.description ||
+                  "No description available"
+                }}
+              </p>
             </div>
           </div>
           <div class="two">
             <span class="after-discount">{{
-              `$${Math.floor(
-                product.price - (product.price * product.discount) / 100
-              )}.00 `
+              formatPrice(getProductPrice(product))
             }}</span>
           </div>
           <div class="three">
@@ -66,13 +78,7 @@
           <div class="four text-end">
             <div class="four-total">Total</div>
             <div class="mb-1">
-              {{
-                `$${
-                  Math.floor(
-                    product.price - (product.price * product.discount) / 100
-                  ) * product.count
-                }`
-              }}
+              {{ formatPrice(getProductPrice(product) * product.count) }}
             </div>
             <button class="delete" @click="deleteItem(i)">
               <i class="fa-regular fa-trash-can"></i>
@@ -99,7 +105,7 @@
         <div class="total-check">
           <div class="total">
             <span class="sub m-2"> Subtotal </span>
-            <span class="total-num">${{ totalPrice }}</span>
+            <span class="total-num">{{ formatPrice(totalPrice) }}</span>
           </div>
           <div class="taxes">Taxes and shipping calculated at checkout</div>
           <router-link class="pay" to="/checkout"> CHECKOUT </router-link>
@@ -121,20 +127,32 @@ export default {
   computed: {
     ...mapState(["cart"]),
     totalPrice() {
-      return this.cart
-        .reduce(
-          (total, product) =>
-            total +
-            Math.floor(
-              product.price - (product.price * product.discount) / 100
-            ) *
-              product.count,
-          0
-        )
-        .toFixed(2);
+      return this.cart.reduce(
+        (total, product) =>
+          total + this.getProductPrice(product) * product.count,
+        0
+      );
     },
   },
   methods: {
+    formatPrice(price) {
+      return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(price);
+    },
+    getProductPrice(product) {
+      // Xử lý cả hai cấu trúc dữ liệu: từ API (catalog) và từ Vuex (home)
+      const price = Number(product.price || product.productprice || 0);
+      const discount = Number(product.discount || product.productdiscount || 0);
+
+      if (isNaN(price)) {
+        console.warn("Invalid price for product:", product);
+        return 0;
+      }
+
+      return Math.floor(price - (price * discount) / 100);
+    },
     setCartCountToLS() {
       localStorage.setItem("cart", JSON.stringify(this.cart));
     },

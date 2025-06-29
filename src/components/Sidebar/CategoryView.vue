@@ -104,9 +104,10 @@ export default {
 
 <style lang="scss" scoped>
 .dropdown {
-  width: 100%;
+  width: 250px;
   margin-bottom: 20px;
-  max-width: 260px;
+  position: relative;
+  z-index: 10;
 
   button {
     width: 100%;

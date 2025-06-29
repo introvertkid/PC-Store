@@ -11,12 +11,12 @@
           <div class="img-holder flex-center">
             <div class="imgs">
               <img
-                :src="product.firstImg"
+                :src="getProductImage(product, 'first')"
                 class="card-img-top first"
                 alt="Product Image"
               />
               <img
-                :src="product.secondImg"
+                :src="getProductImage(product, 'second')"
                 class="card-img-top second"
                 alt="Product Image"
               />
@@ -31,17 +31,13 @@
               <i class="fa-solid fa-star" style="color: grey"></i>
             </span>
             <p class="card-text">
-              {{ product.description }}
+              {{ getProductName(product) }}
             </p>
             <div class="price">
               <span style="font-weight: bold">
-                {{
-                  `$${Math.floor(
-                    product.price - (product.price * product.discount) / 100
-                  )}.00 `
-                }}</span
-              >
-              <span class="price-num"> {{ `$${product.price}.00` }}</span>
+                {{ formatDiscountedPrice(product) }}
+              </span>
+              <span class="price-num"> {{ formatOriginalPrice(product) }}</span>
             </div>
             <!-- Button trigger modal -->
             <button
@@ -105,7 +101,7 @@
           <button class="delete-btn" @click="deleteFav(product)">
             <i class="fa-solid fa-xmark"></i>
           </button>
-          <span class="discount">{{ `-${product.discount}%` }}</span>
+          <span class="discount">{{ `-${getProductDiscount(product)}%` }}</span>
           <div class="product-options">
             <div class="compare" @click="toggleCompare(product)">
               <i v-if="!product.compare" class="fa-solid fa-arrows-rotate"></i>
@@ -117,8 +113,8 @@
                   this.$router.push({
                     name: 'product',
                     params: {
-                      id: product.id,
-                      description: product.description,
+                      id: product.id || product.productid,
+                      description: getProductName(product),
                     },
                   })
                 "
@@ -140,12 +136,58 @@
 
 <script>
 import { mapState } from "vuex";
+import { formatPrice } from "@/utils/currency.js";
 import $ from "jquery";
 export default {
   computed: {
     ...mapState(["fav", "compare", "cart"]),
   },
   methods: {
+    // Compatibility methods for different data structures
+    getProductName(product) {
+      return (
+        product.title ||
+        product.productname ||
+        product.description ||
+        product.name ||
+        "Unknown Product"
+      );
+    },
+    getProductImage(product, type) {
+      if (type === "first") {
+        return (
+          product.firstImg ||
+          product.firstimg ||
+          "/assets/Products/products-1.png"
+        );
+      } else {
+        return (
+          product.secondImg ||
+          product.secondimg ||
+          product.firstImg ||
+          product.firstimg ||
+          "/assets/Products/products-1.png"
+        );
+      }
+    },
+    getProductPrice(product) {
+      const price = parseFloat(product.price) || 0;
+      return isNaN(price) ? 0 : price;
+    },
+    getProductDiscount(product) {
+      const discount = parseFloat(product.discount) || 0;
+      return isNaN(discount) ? 0 : discount;
+    },
+    formatDiscountedPrice(product) {
+      const price = this.getProductPrice(product);
+      const discount = this.getProductDiscount(product);
+      const discountedPrice = Math.floor(price - (price * discount) / 100);
+      return formatPrice(discountedPrice);
+    },
+    formatOriginalPrice(product) {
+      const price = this.getProductPrice(product);
+      return formatPrice(price);
+    },
     // Add to Favourit
     setFavToLS() {
       localStorage.setItem("fav", JSON.stringify(this.fav));
@@ -156,7 +198,9 @@ export default {
       this.$store.commit("totalFav");
       product.wishlist = false;
       localStorage.setItem(
-        `${product.name}Wishlist_${product.id}`,
+        `${this.getProductName(product)}Wishlist_${
+          product.id || product.productid
+        }`,
         product.wishlist
       );
     },
@@ -197,7 +241,9 @@ export default {
       this.$store.commit("totalCompare");
       product.compare = !product.compare;
       localStorage.setItem(
-        `${product.name}Compare_${product.id}`,
+        `${this.getProductName(product)}Compare_${
+          product.id || product.productid
+        }`,
         product.compare
       );
     },
@@ -220,11 +266,13 @@ export default {
 
     // Set Product Icons
     this.fav.forEach((product) => {
+      const productName = this.getProductName(product);
+      const productId = product.id || product.productid;
       const wishlist = localStorage.getItem(
-        `${product.name}Wishlist_${product.id}`
+        `${productName}Wishlist_${productId}`
       );
       const compare = localStorage.getItem(
-        `${product.name}Compare_${product.id}`
+        `${productName}Compare_${productId}`
       );
       if (wishlist !== null) {
         product.wishlist = wishlist === "true";

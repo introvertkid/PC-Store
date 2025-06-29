@@ -12,4 +12,13 @@ router.get("/filter-by-price", productController.filterProductsByPrice);
 // Lọc sản phẩm nâng cao (nhiều tiêu chí)
 router.get("/advanced-filter", productController.advancedFilterProducts);
 
+// Lấy sản phẩm phổ biến (theo avg_rating)
+router.get("/popular", productController.getPopularProducts);
+
+// Lấy sản phẩm mới nhất (random)
+router.get("/latest", productController.getLatestProducts);
+
+// Lấy sản phẩm nổi bật (random)
+router.get("/featured", productController.getFeaturedProducts);
+
 export default router;

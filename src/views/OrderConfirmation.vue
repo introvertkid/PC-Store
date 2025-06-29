@@ -67,10 +67,10 @@
               </div>
               <div class="name">{{ product.title }}</div>
             </div>
-            <div class="price">${{ calculatePrice(product).toFixed(2) }}</div>
+            <div class="price">{{ formatPrice(calculatePrice(product)) }}</div>
             <div class="quantity">{{ product.count }}</div>
             <div class="total">
-              ${{ (calculatePrice(product) * product.count).toFixed(2) }}
+              {{ formatPrice(calculatePrice(product) * product.count) }}
             </div>
           </div>
         </div>
@@ -78,19 +78,19 @@
         <div class="order-totals">
           <div class="total-row">
             <span class="label">Subtotal:</span>
-            <span class="value">${{ order.subtotal }}</span>
+            <span class="value">{{ formatPrice(order.subtotal) }}</span>
           </div>
           <div class="total-row">
             <span class="label">Shipping:</span>
-            <span class="value">${{ order.shippingCost }}</span>
+            <span class="value">{{ formatPrice(order.shippingCost) }}</span>
           </div>
           <div class="total-row">
             <span class="label">Tax:</span>
-            <span class="value">${{ order.taxAmount }}</span>
+            <span class="value">{{ formatPrice(order.taxAmount) }}</span>
           </div>
           <div class="total-row grand-total">
             <span class="label">Grand Total:</span>
-            <span class="value">${{ order.total }}</span>
+            <span class="value">{{ formatPrice(order.total) }}</span>
           </div>
         </div>
       </div>
@@ -109,6 +109,8 @@
 </template>
 
 <script>
+import { formatPrice } from "@/utils/currency.js";
+
 export default {
   data() {
     return {
@@ -123,6 +125,7 @@ export default {
     }
   },
   methods: {
+    formatPrice,
     formatDate(dateString) {
       const date = new Date(dateString);
       return date.toLocaleDateString("en-US", {

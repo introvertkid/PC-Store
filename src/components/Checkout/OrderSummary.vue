@@ -2,35 +2,38 @@
   <div class="order-summary">
     <h3>Order Summary</h3>
     <div class="summary-items">
-      <div class="item" v-for="product in cart" :key="product.id">
+      <div class="item" v-for="product in cart" :key="getProductId(product)">
         <div class="product-info">
           <div class="img">
-            <img :src="product.firstImg" :alt="product.title" />
+            <img
+              :src="getProductImage(product)"
+              :alt="getProductName(product)"
+            />
           </div>
           <div class="details">
-            <div class="name">{{ product.title }}</div>
+            <div class="name">{{ getProductName(product) }}</div>
             <div class="qty">Qty: {{ product.count }}</div>
           </div>
         </div>
-        <div class="price">${{ calculatePrice(product).toFixed(2) }}</div>
+        <div class="price">{{ formatPrice(calculatePrice(product)) }}</div>
       </div>
     </div>
     <div class="summary-total">
       <div class="line subtotal">
         <span>Subtotal</span>
-        <span>${{ subtotal }}</span>
+        <span>{{ formatPrice(subtotal) }}</span>
       </div>
       <div class="line shipping">
         <span>Shipping</span>
-        <span>${{ shippingCost }}</span>
+        <span>{{ formatPrice(shippingCost) }}</span>
       </div>
       <div class="line tax">
         <span>Tax ({{ taxRate }}%)</span>
-        <span>${{ taxAmount }}</span>
+        <span>{{ formatPrice(taxAmount) }}</span>
       </div>
       <div class="line total">
         <span>Total</span>
-        <span>${{ orderTotal }}</span>
+        <span>{{ formatPrice(orderTotal) }}</span>
       </div>
     </div>
     <div class="summary-action">
@@ -46,6 +49,8 @@
 </template>
 
 <script>
+import { formatPrice } from "@/utils/currency.js";
+
 export default {
   name: "OrderSummary",
 
@@ -73,33 +78,59 @@ export default {
   computed: {
     subtotal() {
       if (!this.cart || this.cart.length === 0) {
-        return "0.00";
+        return 0;
       }
 
-      return this.cart
-        .reduce((total, product) => total + this.calculatePrice(product), 0)
-        .toFixed(2);
+      return this.cart.reduce((total, product) => {
+        const price = this.calculatePrice(product);
+        return total + (isNaN(price) ? 0 : price);
+      }, 0);
     },
 
     taxAmount() {
-      return ((parseFloat(this.subtotal) * this.taxRate) / 100).toFixed(2);
+      return (this.subtotal * this.taxRate) / 100;
     },
 
     orderTotal() {
-      return (
-        parseFloat(this.subtotal) +
-        parseFloat(this.shippingCost) +
-        parseFloat(this.taxAmount)
-      ).toFixed(2);
+      return this.subtotal + this.shippingCost + this.taxAmount;
     },
   },
 
   methods: {
-    calculatePrice(product) {
+    formatPrice,
+    // Compatibility methods for different data structures
+    getProductId(product) {
+      return product.id || product.productid || "unknown-id";
+    },
+    getProductName(product) {
       return (
-        Math.floor(product.price - (product.price * product.discount) / 100) *
-        product.count
+        product.title ||
+        product.productname ||
+        product.description ||
+        product.name ||
+        "Unknown Product"
       );
+    },
+    getProductImage(product) {
+      return (
+        product.firstImg ||
+        product.firstimg ||
+        "/assets/Products/products-1.png"
+      );
+    },
+    getProductPrice(product) {
+      const price = parseFloat(product.price) || 0;
+      return isNaN(price) ? 0 : price;
+    },
+    getProductDiscount(product) {
+      const discount = parseFloat(product.discount) || 0;
+      return isNaN(discount) ? 0 : discount;
+    },
+    calculatePrice(product) {
+      const price = this.getProductPrice(product);
+      const discount = this.getProductDiscount(product);
+      const discountedPrice = Math.floor(price - (price * discount) / 100);
+      return discountedPrice * product.count;
     },
   },
 };
